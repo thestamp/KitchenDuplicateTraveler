@@ -1,27 +1,22 @@
-name: Deploy Blazor WASM to GitHub Pages
+name: Deploy Blazor WASM to gh-pages branch
 
 on:
   push:
     branches:
-      - '**'  # Trigger on all branches
+      - main        # Deploy when pushing to main
+      - master      # Or master if that's your default
+      - feature/web # Temporarily include your feature branch for testing
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write  # Need write permissions to push to gh-pages branch
 
-# Allow only one concurrent deployment per branch
 concurrency:
-  group: "pages-${{ github.ref }}"
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
     - name: Checkout code
@@ -38,13 +33,6 @@ jobs:
     - name: Publish Blazor WASM
       run: dotnet publish Traveler.Wasm.Client/Traveler.Wasm.Client.csproj -c Release -o publish
     
-    - name: List publish directory contents (debug)
-      run: |
-        echo "Contents of publish directory:"
-        ls -la publish/
-        echo "Looking for index.html:"
-        find publish -name "index.html"
-    
     - name: Change base tag in index.html
       run: |
         sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' publish/index.html
@@ -52,11 +40,10 @@ jobs:
     - name: Add .nojekyll file
       run: touch publish/.nojekyll
     
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+    - name: Deploy to gh-pages branch
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        path: 'publish'
-    
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./publish
+        publish_branch: gh-pages
+        force_orphan: true
