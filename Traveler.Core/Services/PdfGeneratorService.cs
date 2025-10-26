@@ -75,7 +75,7 @@ namespace Traveler.Core.Services
 
                 column.Item().Text(text =>
                 {
-                    text.Span($"║ BOARD {game.BoardNumber,-2}  Dealer: {game.Dealer,-5}  Vulnerable: {game.Vulnerable,-10}        ║").FontSize(8);
+                    text.Span($"║ BOARD {game.BoardNumber,-2}  Dealer: {game.Dealer,-5}  Vulnerable: {game.Vulnerable,-10}           ║").FontSize(8);
                 });
 
                 column.Item().Text(text =>
