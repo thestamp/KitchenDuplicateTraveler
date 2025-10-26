@@ -6,10 +6,13 @@ namespace Traveler.Core.Models
     {
         public class ScoreDetail
         {
+            public string Contract { get; set; } = string.Empty;
+            public string Declarer { get; set; } = string.Empty;
+            public int TricksMade { get; set; }
             public int Score { get; set; }
             public double MatchPoints { get; set; }
             public string Ranking { get; set; } = string.Empty;
-            public bool IsStoredScore { get; set; }
+            public bool IsStoredScore { get; set; } // True if this is an actual game result, false if theoretical position
         }
 
         public GameModel GameModel { get; set; } = new GameModel();

@@ -76,20 +76,51 @@ namespace Traveler.Console
                     if (game.GameResults.Any())
                     {
                         // Calculate NS scores for all results
-                        var nsScores = game.GameResults
-                            .Select(r => scoringService.CalculateNorthScore(r, game.Vulnerable))
+                        var scoredResults = game.GameResults
+                            .Select(r => new
+                            {
+                                GameResult = r,
+                                NorthScore = scoringService.CalculateNorthScore(r, game.Vulnerable)
+                            })
                             .ToList();
 
-                        // Get all ranking options
+                        var nsScores = scoredResults.Select(sr => sr.NorthScore).ToList();
+
+                        // Get all ranking options (includes actual scores and theoretical positions)
                         var matchPointsOptions = matchPointsService.GetAllRankingOptions(nsScores);
 
-                        // Create score details
-                        var scoreDetails = matchPointsOptions.Select(option => new GameData.ScoreDetail
+                        // Create score details from match points options
+                        var scoreDetails = matchPointsOptions.Select(option =>
                         {
-                            Score = option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score) ? score : 0,
-                            MatchPoints = option.MatchPoints,
-                            Ranking = option.Ranking,
-                            IsStoredScore = option.IsStoredScore
+                            var detail = new GameData.ScoreDetail
+                            {
+                                MatchPoints = option.MatchPoints,
+                                Ranking = option.Ranking,
+                                IsStoredScore = option.IsStoredScore
+                            };
+
+                            if (option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score))
+                            {
+                                detail.Score = score;
+
+                                // Find the first game result with this score
+                                var matchingResult = scoredResults.FirstOrDefault(sr => sr.NorthScore == score);
+                                if (matchingResult != null)
+                                {
+                                    detail.Contract = matchingResult.GameResult.Contract ?? "";
+                                    detail.Declarer = matchingResult.GameResult.Declarer.ToString().Substring(0, 1);
+                                    detail.TricksMade = matchingResult.GameResult.Result;
+                                }
+                            }
+                            else
+                            {
+                                detail.Score = 0;
+                                detail.Contract = "";
+                                detail.Declarer = "";
+                                detail.TricksMade = 0;
+                            }
+
+                            return detail;
                         }).ToList();
 
                         var gameData = new GameData

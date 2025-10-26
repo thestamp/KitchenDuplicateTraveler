@@ -105,9 +105,11 @@ namespace Traveler.Core.Services
                     column.Item().Text("MATCH POINTS AWARDED:").FontSize(8).Bold();
                     column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
 
-                    // Table header: Score, MP, Ranking
+                    // Table header: Contract, Tricks, Score, MP, Ranking
                     column.Item().Row(row =>
                     {
+                        row.ConstantItem(55).Text("Contract").FontSize(7).Bold();
+                        row.ConstantItem(40).Text("Tricks").FontSize(7).Bold();
                         row.ConstantItem(50).Text("Score").FontSize(7).Bold();
                         row.ConstantItem(30).Text("MP").FontSize(7).Bold();
                         row.RelativeItem().Text("Ranking").FontSize(7).Bold();
@@ -120,8 +122,21 @@ namespace Traveler.Core.Services
                     {
                         column.Item().Row(row =>
                         {
-                            var scoreDisplay = detail.IsStoredScore ? detail.Score.ToString() : "---";
+                            // Only show contract details for actual stored scores
+                            var contractDisplay = detail.IsStoredScore && !string.IsNullOrEmpty(detail.Contract)
+                                ? $"{detail.Contract} by {detail.Declarer}"
+                                : "---";
                             
+                            var tricksDisplay = detail.IsStoredScore && detail.TricksMade > 0
+                                ? detail.TricksMade.ToString()
+                                : "---";
+                            
+                            var scoreDisplay = detail.IsStoredScore
+                                ? detail.Score.ToString()
+                                : "---";
+                            
+                            row.ConstantItem(55).Text(contractDisplay).FontSize(7);
+                            row.ConstantItem(40).Text(tricksDisplay).FontSize(7);
                             row.ConstantItem(50).Text(scoreDisplay).FontSize(7);
                             row.ConstantItem(30).Text($"{detail.MatchPoints:F1}").FontSize(7);
                             row.RelativeItem().Text(detail.Ranking).FontSize(7);
