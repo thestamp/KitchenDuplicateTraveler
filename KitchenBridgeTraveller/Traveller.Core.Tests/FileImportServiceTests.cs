@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Xunit;
+﻿using Traveler.Core.Models;
+using Traveler.Core.Parsers;
+using Traveler.Core.Services;
 using Xunit.Abstractions;
-using Traveller.Core.Models;
-using Traveller.Core.Services;
-using Traveller.Core.Parsers;
 
-namespace Traveller.Core.Tests
+namespace Traveler.Core.Tests
 {
     public class FileImportServiceTests
     {

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using Traveller.Core.Models;
-using Traveller.Core.Parsers;
+﻿using Traveler.Core.Models;
+using Traveler.Core.Parsers;
 
-namespace Traveller.Core.Services
+namespace Traveler.Core.Services
 {
     public class FileImportService
     {

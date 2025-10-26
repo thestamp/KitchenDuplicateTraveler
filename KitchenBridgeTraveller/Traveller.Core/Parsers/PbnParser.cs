@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using Traveller.Core.Models;
+using Traveler.Core.Models;
 
-namespace Traveller.Core.Parsers
+namespace Traveler.Core.Parsers
 {
     public static class PbnParser
     {

@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Traveller.Core.Models;
+using Traveler.Core.Models;
 
-namespace Traveller.Core.Services
+namespace Traveler.Core.Services
 {
     public class MatchPointsService
     {

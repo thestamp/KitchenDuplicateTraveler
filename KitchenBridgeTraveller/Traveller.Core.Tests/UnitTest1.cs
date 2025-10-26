@@ -1,4 +1,4 @@
-namespace Traveller.Core.Tests
+namespace Traveler.Core.Tests
 {
     public class UnitTest1
     {

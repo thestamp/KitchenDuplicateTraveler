@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace Traveller.Core.Models
+namespace Traveler.Core.Models
 {
     public class MatchPointsResultModel
     {

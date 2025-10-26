@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Traveller.Core.Models
+﻿namespace Traveler.Core.Models
 {
     public class GameModel
     {

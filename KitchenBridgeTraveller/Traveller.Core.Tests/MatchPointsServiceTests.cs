@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Xunit;
+﻿using Traveler.Core.Services;
 using Xunit.Abstractions;
-using Traveller.Core.Services;
 
-namespace Traveller.Core.Tests
+namespace Traveler.Core.Tests
 {
     public class MatchPointsServiceTests
     {

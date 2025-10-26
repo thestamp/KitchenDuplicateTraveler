@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36616.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.Core", "Traveller.Core\Traveller.Core.csproj", "{BD102895-B249-4B12-A676-696F924CCFFA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveler.Core", "Traveller.Core\Traveler.Core.csproj", "{BD102895-B249-4B12-A676-696F924CCFFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.Core.Tests", "Traveller.Core.Tests\Traveller.Core.Tests.csproj", "{C24E5684-DF07-4D1F-BB2D-3640E4A92AE4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveler.Core.Tests", "Traveller.Core.Tests\Traveler.Core.Tests.csproj", "{C24E5684-DF07-4D1F-BB2D-3640E4A92AE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.WinConsole", "Traveller.WinConsole\Traveller.WinConsole.csproj", "{FF055DB5-5ADE-40CC-A26A-537B3B197A7F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveler.WinConsole", "Traveller.WinConsole\Traveler.WinConsole.csproj", "{FF055DB5-5ADE-40CC-A26A-537B3B197A7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
