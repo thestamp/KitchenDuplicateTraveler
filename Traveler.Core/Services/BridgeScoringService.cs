@@ -1,6 +1,6 @@
 using Traveler.Core.Models;
 
-namespace Traveler.Console.Services
+namespace Traveler.Core.Services
 {
     public class BridgeScoringService
     {

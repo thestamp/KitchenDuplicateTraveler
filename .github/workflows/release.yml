@@ -1,16 +1,19 @@
-name: Build and Release
+name: Release
 
 on:
   push:
     branches:
-      - '**'
+      - main
+      - develop
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
     
     steps:
     - name: Checkout code
@@ -32,69 +35,59 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
 
-    - name: Generate version number
+    - name: Publish Console App
+      run: dotnet publish Traveler.Console/Traveler.Console.csproj --configuration Release --output ./publish --self-contained true --runtime win-x64 /p:PublishSingleFile=true
+
+    - name: Get version
       id: version
+      shell: pwsh
       run: |
-        COMMIT_COUNT=$(git rev-list --count HEAD)
-        COMMIT_SHA=$(git rev-parse --short HEAD)
-        BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        BRANCH_NAME_SAFE=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
+        $branch = "${{ github.ref_name }}"
+        $shortSha = "${{ github.sha }}".Substring(0, 7)
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
         
-        if [ "$BRANCH_NAME" == "main" ]; then
-          VERSION="1.0.$COMMIT_COUNT"
-          TAG="v$VERSION"
-          IS_PRERELEASE=false
-        else
-          VERSION="1.0.$COMMIT_COUNT-$BRANCH_NAME_SAFE"
-          TAG="v$VERSION"
-          IS_PRERELEASE=true
-        fi
+        if ($branch -eq "main") {
+          $version = "v1.0.${{ github.run_number }}"
+          $prerelease = "false"
+        } elseif ($branch -eq "develop") {
+          $version = "v1.0.${{ github.run_number }}-beta"
+          $prerelease = "true"
+        } else {
+          $version = "v1.0.${{ github.run_number }}-$branch-$shortSha"
+          $prerelease = "true"
+        }
         
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
-        echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "prerelease=$prerelease" >> $env:GITHUB_OUTPUT
 
-    - name: Publish Windows x64
-      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/win-x64
-
-    - name: Publish Linux x64
-      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/linux-x64
-
-    - name: Publish macOS x64
-      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/osx-x64
-
-    - name: Publish macOS ARM64
-      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/osx-arm64
-
-    - name: Create archives
+    - name: Create Release Archive
+      shell: pwsh
       run: |
-        cd publish
-        zip -r ../Traveler-${{ steps.version.outputs.version }}-win-x64.zip win-x64/
-        tar -czf ../Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz -C linux-x64 .
-        tar -czf ../Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz -C osx-x64 .
-        tar -czf ../Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz -C osx-arm64 .
+        $version = "${{ steps.version.outputs.version }}"
+        Compress-Archive -Path ./publish/* -DestinationPath "KitchenDuplicateTraveler-$version-win-x64.zip"
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
+      if: github.ref_type == 'tag' || github.ref_name == 'main' || github.ref_name == 'develop'
       with:
-        tag_name: ${{ steps.version.outputs.tag }}
+        tag_name: ${{ steps.version.outputs.version }}
         name: Release ${{ steps.version.outputs.version }}
-        body: |
-          Release ${{ steps.version.outputs.version }}
-          
-          Branch: ${{ steps.version.outputs.branch }}
-          Commit: ${{ github.sha }}
-          
-          ## Downloads
-          - Windows (x64): `Traveler-${{ steps.version.outputs.version }}-win-x64.zip`
-          - Linux (x64): `Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz`
-          - macOS (x64): `Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz`
-          - macOS (ARM64): `Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz`
-        files: |
-          Traveler-${{ steps.version.outputs.version }}-win-x64.zip
-          Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz
-          Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz
-          Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz
-        prerelease: ${{ steps.version.outputs.is_prerelease }}
         draft: false
+        prerelease: ${{ steps.version.outputs.prerelease }}
+        files: |
+          KitchenDuplicateTraveler-${{ steps.version.outputs.version }}-win-x64.zip
+        body: |
+          ## Kitchen Duplicate Traveler ${{ steps.version.outputs.version }}
+          
+          ### Changes
+          - Built from branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          
+          ### Download
+          Download the Windows executable below and run it to process your PBN files.
+          
+          ### Usage
+          1. Download and extract the zip file
+          2. Run `Traveler.Console.exe`
+          3. Enter the path to your PBN file when prompted
+          4. A PDF will be generated in the same directory as your PBN file

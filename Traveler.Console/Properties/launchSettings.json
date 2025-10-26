@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Traveler.Console": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\lefebvre-j\\Downloads\\New folder (2)\\highcliffe_20231009_1.pbn\""
+      "commandName": "Project"
     }
   }
 }
