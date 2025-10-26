@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Components.Forms
 @using Traveler.Wasm.Client.Services
+@using Traveler.Wasm.Client.Components
 @using Traveler.Core.Models
 @inject TravelerService TravelerService
 @inject ISnackbar Snackbar
@@ -95,7 +96,7 @@
     }
     else
     {
-        <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudPaper Class="pa-4 mb-4 no-print" Elevation="2">
             <div class="d-flex justify-space-between align-center">
                 <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
                 <div>
@@ -135,6 +136,7 @@
         _errorMessage = null;
         _processing = true;
         _selectedFileName = file.Name;
+        StateHasChanged();
 
         try
         {
@@ -154,6 +156,7 @@
         finally
         {
             _processing = false;
+            StateHasChanged();
         }
     }
 
@@ -161,6 +164,7 @@
     {
         _errorMessage = null;
         _processing = true;
+        StateHasChanged();
 
         try
         {
@@ -176,6 +180,7 @@
         finally
         {
             _processing = false;
+            StateHasChanged();
         }
     }
 
