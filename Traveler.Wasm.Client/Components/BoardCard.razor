@@ -1,0 +1,175 @@
+﻿@using Traveler.Core.Models
+
+<MudPaper Class="board-card" Elevation="2">
+    <div class="board-header">
+        <MudText Typo="Typo.body2" Class="header-line">╔═══════════════════════════════════════════════════╗</MudText>
+        <MudText Typo="Typo.body2" Class="header-line">║ Board @GameData.GameModel.BoardNumber.ToString("D2")  Dealer: @FormatPlayer(GameData.GameModel.Dealer)  Vulnerable: @FormatVulnerable(GameData.GameModel.Vulnerable)   ║</MudText>
+        <MudText Typo="Typo.body2" Class="header-line">╚═══════════════════════════════════════════════════╝</MudText>
+    </div>
+
+    <div class="board-content">
+        <MudText Typo="Typo.caption" Class="section-title">HANDS:</MudText>
+        <MudDivider />
+        <div class="hands-section">
+            @foreach (var player in new[] { GameModel.Player.North, GameModel.Player.East, GameModel.Player.South, GameModel.Player.West })
+            {
+                if (GameData.GameModel.PlayerHands.ContainsKey(player))
+                {
+                    <MudText Typo="Typo.caption" Class="hand-line">
+                        @FormatPlayerName(player): @FormatHand(GameData.GameModel.PlayerHands[player])
+                    </MudText>
+                }
+            }
+        </div>
+
+        @if (GameData.ScoreDetails.Any())
+        {
+            <MudText Typo="Typo.caption" Class="section-title mt-2">MATCH POINTS AWARDED:</MudText>
+            <MudDivider />
+            <div class="scores-section">
+                <div class="score-header">
+                    <span class="col-contract">Contract</span>
+                    <span class="col-tricks">Tricks</span>
+                    <span class="col-score">Score</span>
+                    <span class="col-mp">MP</span>
+                    <span class="col-ranking">Ranking</span>
+                </div>
+                @foreach (var detail in GameData.ScoreDetails)
+                {
+                    <div class="score-row">
+                        <span class="col-contract">@FormatContract(detail)</span>
+                        <span class="col-tricks">@FormatTricks(detail)</span>
+                        <span class="col-score">@FormatScore(detail)</span>
+                        <span class="col-mp">@detail.MatchPoints.ToString("F1")</span>
+                        <span class="col-ranking">@detail.Ranking</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public GameData GameData { get; set; } = new();
+
+    private string FormatPlayer(GameModel.Player player) => player.ToString().PadRight(5);
+    private string FormatPlayerName(GameModel.Player player) => player.ToString().PadRight(5);
+    private string FormatVulnerable(string vulnerable) => vulnerable?.PadRight(10) ?? "None".PadRight(10);
+
+    private string FormatHand(string handString)
+    {
+        if (string.IsNullOrWhiteSpace(handString)) return "";
+        var suits = handString.Split('.');
+        if (suits.Length != 4) return handString;
+        return $"♠{suits[0].PadRight(10)} ♥{suits[1].PadRight(10)} ♦{suits[2].PadRight(10)} ♣{suits[3]}";
+    }
+
+    private string FormatContract(GameData.ScoreDetail detail)
+    {
+        return detail.IsStoredScore && !string.IsNullOrEmpty(detail.Contract)
+            ? $"{detail.Contract} by {detail.Declarer}"
+            : "---";
+    }
+
+    private string FormatTricks(GameData.ScoreDetail detail)
+    {
+        return detail.IsStoredScore && detail.TricksMade > 0
+            ? detail.TricksMade.ToString()
+            : "---";
+    }
+
+    private string FormatScore(GameData.ScoreDetail detail)
+    {
+        return detail.IsStoredScore ? detail.Score.ToString() : "---";
+    }
+}
+
+<style>
+    .board-card {
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.7rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .board-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .header-line {
+        font-family: 'Courier New', monospace;
+        font-size: 0.65rem;
+        line-height: 1.2;
+    }
+
+    .board-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .hands-section {
+        margin-bottom: 0.5rem;
+    }
+
+    .hand-line {
+        font-family: 'Courier New', monospace;
+        font-size: 0.7rem;
+        line-height: 1.3;
+        white-space: pre;
+    }
+
+    .scores-section {
+        font-size: 0.65rem;
+        flex: 1;
+        overflow: auto;
+    }
+
+    .score-header,
+    .score-row {
+        display: grid;
+        grid-template-columns: 100px 50px 60px 40px 1fr;
+        gap: 0.25rem;
+        padding: 0.15rem 0;
+    }
+
+    .score-header {
+        font-weight: bold;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .score-row {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    @@media print {
+        .board-card {
+            padding: 0.5rem;
+            font-size: 0.6rem;
+            box-shadow: none !important;
+            border: 1px solid #000;
+        }
+
+        .header-line {
+            font-size: 0.55rem;
+        }
+
+        .hand-line {
+            font-size: 0.6rem;
+        }
+
+        .scores-section {
+            font-size: 0.55rem;
+        }
+    }
+</style>
