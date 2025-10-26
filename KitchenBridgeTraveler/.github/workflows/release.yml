@@ -1,0 +1,100 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Generate version number
+      id: version
+      run: |
+        COMMIT_COUNT=$(git rev-list --count HEAD)
+        COMMIT_SHA=$(git rev-parse --short HEAD)
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        BRANCH_NAME_SAFE=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
+        
+        if [ "$BRANCH_NAME" == "main" ]; then
+          VERSION="1.0.$COMMIT_COUNT"
+          TAG="v$VERSION"
+          IS_PRERELEASE=false
+        else
+          VERSION="1.0.$COMMIT_COUNT-$BRANCH_NAME_SAFE"
+          TAG="v$VERSION"
+          IS_PRERELEASE=true
+        fi
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+        echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+    - name: Publish Windows x64
+      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/win-x64
+
+    - name: Publish Linux x64
+      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/linux-x64
+
+    - name: Publish macOS x64
+      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/osx-x64
+
+    - name: Publish macOS ARM64
+      run: dotnet publish Traveler.Console/Traveler.Console.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:Version=${{ steps.version.outputs.version }} -o ./publish/osx-arm64
+
+    - name: Create archives
+      run: |
+        cd publish
+        zip -r ../Traveler-${{ steps.version.outputs.version }}-win-x64.zip win-x64/
+        tar -czf ../Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz -C linux-x64 .
+        tar -czf ../Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz -C osx-x64 .
+        tar -czf ../Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz -C osx-arm64 .
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: Release ${{ steps.version.outputs.version }}
+        body: |
+          Release ${{ steps.version.outputs.version }}
+          
+          Branch: ${{ steps.version.outputs.branch }}
+          Commit: ${{ github.sha }}
+          
+          ## Downloads
+          - Windows (x64): `Traveler-${{ steps.version.outputs.version }}-win-x64.zip`
+          - Linux (x64): `Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz`
+          - macOS (x64): `Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz`
+          - macOS (ARM64): `Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz`
+        files: |
+          Traveler-${{ steps.version.outputs.version }}-win-x64.zip
+          Traveler-${{ steps.version.outputs.version }}-linux-x64.tar.gz
+          Traveler-${{ steps.version.outputs.version }}-osx-x64.tar.gz
+          Traveler-${{ steps.version.outputs.version }}-osx-arm64.tar.gz
+        prerelease: ${{ steps.version.outputs.is_prerelease }}
+        draft: false
