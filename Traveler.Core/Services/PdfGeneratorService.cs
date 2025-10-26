@@ -1,10 +1,9 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using Traveler.Console.Models;
 using Traveler.Core.Models;
 
-namespace Traveler.Console.Services
+namespace Traveler.Core.Services
 {
     public class PdfGeneratorService
     {

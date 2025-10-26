@@ -1,5 +1,5 @@
-using Traveler.Console.Services;
 using Traveler.Core.Services;
+using Traveler.Core.Models;
 
 namespace Traveler.Console
 {
@@ -9,28 +9,47 @@ namespace Traveler.Console
         {
             try
             {
-                // Check if a file was dragged onto the executable
+                string inputFilePath;
+
+                // Check if a file was provided as argument (drag and drop)
                 if (args.Length == 0)
                 {
-                    System.Console.WriteLine("ERROR: No file provided.");
-                    System.Console.WriteLine("Usage: Drag and drop a PBN file onto this executable.");
-                    System.Console.WriteLine("\nPress any key to exit...");
-                    System.Console.ReadKey();
-                    return;
-                }
+                    // Prompt user for file path
+                    System.Console.WriteLine("PBN File Processor");
+                    System.Console.WriteLine("==================");
+                    System.Console.WriteLine();
+                    System.Console.Write("Enter the path to the PBN file: ");
+                    inputFilePath = System.Console.ReadLine()?.Trim() ?? "";
 
-                string inputFilePath = args[0];
+                    // Remove quotes if user copy-pasted a path with quotes
+                    if (inputFilePath.StartsWith("\"") && inputFilePath.EndsWith("\""))
+                    {
+                        inputFilePath = inputFilePath.Substring(1, inputFilePath.Length - 2);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(inputFilePath))
+                    {
+                        System.Console.WriteLine("\nERROR: No file path provided.");
+                        System.Console.WriteLine("\nPress any key to exit...");
+                        System.Console.ReadKey();
+                        return;
+                    }
+                }
+                else
+                {
+                    inputFilePath = args[0];
+                }
 
                 // Validate file exists
                 if (!File.Exists(inputFilePath))
                 {
-                    System.Console.WriteLine($"ERROR: File not found: {inputFilePath}");
+                    System.Console.WriteLine($"\nERROR: File not found: {inputFilePath}");
                     System.Console.WriteLine("\nPress any key to exit...");
                     System.Console.ReadKey();
                     return;
                 }
 
-                System.Console.WriteLine($"Processing file: {inputFilePath}");
+                System.Console.WriteLine($"\nProcessing file: {inputFilePath}");
 
                 // Read and parse the PBN file
                 var fileContent = File.ReadAllText(inputFilePath);
@@ -50,7 +69,7 @@ namespace Traveler.Console
                 // Calculate match points for each board
                 var matchPointsService = new MatchPointsService();
                 var scoringService = new BridgeScoringService();
-                var boardData = new List<Traveler.Console.Models.GameData>();
+                var boardData = new List<GameData>();
 
                 foreach (var game in games.OrderBy(g => g.BoardNumber))
                 {
@@ -65,7 +84,7 @@ namespace Traveler.Console
                         var matchPointsOptions = matchPointsService.GetAllRankingOptions(nsScores);
 
                         // Create score details
-                        var scoreDetails = matchPointsOptions.Select(option => new Traveler.Console.Models.GameData.ScoreDetail
+                        var scoreDetails = matchPointsOptions.Select(option => new GameData.ScoreDetail
                         {
                             Score = option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score) ? score : 0,
                             MatchPoints = option.MatchPoints,
@@ -73,7 +92,7 @@ namespace Traveler.Console
                             IsStoredScore = option.IsStoredScore
                         }).ToList();
 
-                        var gameData = new Traveler.Console.Models.GameData
+                        var gameData = new GameData
                         {
                             GameModel = game,
                             ScoreDetails = scoreDetails

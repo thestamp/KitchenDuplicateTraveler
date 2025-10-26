@@ -1,6 +1,6 @@
 using Traveler.Core.Models;
 
-namespace Traveler.Console.Models
+namespace Traveler.Core.Models
 {
     public class GameData
     {
