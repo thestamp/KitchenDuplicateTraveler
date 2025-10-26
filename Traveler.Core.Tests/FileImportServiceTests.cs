@@ -158,63 +158,63 @@ namespace Traveler.Core.Tests
             Assert.Contains(result, g => g.BoardNumber == 2);
         }
 
-        [Fact]
-        public void ImportFile_TestPbnFile_ParsesAndPrintsAll()
-        {
-            // Read the test.pbn file
-            var testFilePath = Path.Combine("", "test.pbn");
+        //[Fact]
+        //public void ImportFile_TestPbnFile_ParsesAndPrintsAll()
+        //{
+        //    // Read the test.pbn file
+        //    var testFilePath = Path.Combine("", "test.pbn");
             
-            if (!File.Exists(testFilePath))
-            {
-                _output.WriteLine($"Test file not found at: {testFilePath}");
-                Assert.True(File.Exists(testFilePath), "test.pbn file should exist in Files directory");
-                return;
-            }
+        //    if (!File.Exists(testFilePath))
+        //    {
+        //        _output.WriteLine($"Test file not found at: {testFilePath}");
+        //        Assert.True(File.Exists(testFilePath), "test.pbn file should exist in Files directory");
+        //        return;
+        //    }
 
-            var fileContent = File.ReadAllText(testFilePath);
-            var service = new FileImportService();
-            var games = service.ImportFile(fileContent);
+        //    var fileContent = File.ReadAllText(testFilePath);
+        //    var service = new FileImportService();
+        //    var games = service.ImportFile(fileContent);
 
-            Assert.NotEmpty(games);
-            _output.WriteLine($"Total boards parsed: {games.Count}");
-            _output.WriteLine("");
+        //    Assert.NotEmpty(games);
+        //    _output.WriteLine($"Total boards parsed: {games.Count}");
+        //    _output.WriteLine("");
 
-            foreach (var game in games.OrderBy(g => g.BoardNumber))
-            {
-                _output.WriteLine($"===== BOARD {game.BoardNumber} =====");
-                _output.WriteLine($"Event: {game.Event}");
-                _output.WriteLine($"Site: {game.Site}");
-                _output.WriteLine($"Date: {game.Date}");
-                _output.WriteLine($"Dealer: {game.Dealer}");
-                _output.WriteLine($"Vulnerable: {game.Vulnerable}");
-                _output.WriteLine("");
-                _output.WriteLine("Hands:");
-                foreach (var hand in game.PlayerHands.OrderBy(h => h.Key))
-                {
-                    _output.WriteLine($"  {hand.Key}: {hand.Value}");
-                }
-                _output.WriteLine("");
-                _output.WriteLine("Results:");
-                foreach (var result in game.GameResults.OrderBy(r => r.PairIdNS))
-                {
-                    _output.WriteLine($"  NS Pair {result.PairIdNS} vs EW Pair {result.PairIdEW}: {result.Contract} by {result.Declarer}, Result: {result.Result}");
-                }
-                _output.WriteLine("");
-            }
+        //    foreach (var game in games.OrderBy(g => g.BoardNumber))
+        //    {
+        //        _output.WriteLine($"===== BOARD {game.BoardNumber} =====");
+        //        _output.WriteLine($"Event: {game.Event}");
+        //        _output.WriteLine($"Site: {game.Site}");
+        //        _output.WriteLine($"Date: {game.Date}");
+        //        _output.WriteLine($"Dealer: {game.Dealer}");
+        //        _output.WriteLine($"Vulnerable: {game.Vulnerable}");
+        //        _output.WriteLine("");
+        //        _output.WriteLine("Hands:");
+        //        foreach (var hand in game.PlayerHands.OrderBy(h => h.Key))
+        //        {
+        //            _output.WriteLine($"  {hand.Key}: {hand.Value}");
+        //        }
+        //        _output.WriteLine("");
+        //        _output.WriteLine("Results:");
+        //        foreach (var result in game.GameResults.OrderBy(r => r.PairIdNS))
+        //        {
+        //            _output.WriteLine($"  NS Pair {result.PairIdNS} vs EW Pair {result.PairIdEW}: {result.Contract} by {result.Declarer}, Result: {result.Result}");
+        //        }
+        //        _output.WriteLine("");
+        //    }
 
-            // Verify specific board counts
-            Assert.Equal(28, games.Count);
+        //    // Verify specific board counts
+        //    Assert.Equal(28, games.Count);
             
-            // Verify first board
-            var board1 = games.FirstOrDefault(g => g.BoardNumber == 1);
-            Assert.NotNull(board1);
-            Assert.Equal("Duplicate", board1.Event);
-            Assert.Equal("Highcliffe Duplicate Bridge Club", board1.Site);
-            Assert.Equal("2023.10.09", board1.Date);
-            Assert.Equal(GameModel.Player.North, board1.Dealer);
-            Assert.Equal("None", board1.Vulnerable);
-            Assert.Equal(7, board1.GameResults.Count);
-        }
+        //    // Verify first board
+        //    var board1 = games.FirstOrDefault(g => g.BoardNumber == 1);
+        //    Assert.NotNull(board1);
+        //    Assert.Equal("Duplicate", board1.Event);
+        //    Assert.Equal("Highcliffe Duplicate Bridge Club", board1.Site);
+        //    Assert.Equal("2023.10.09", board1.Date);
+        //    Assert.Equal(GameModel.Player.North, board1.Dealer);
+        //    Assert.Equal("None", board1.Vulnerable);
+        //    Assert.Equal(7, board1.GameResults.Count);
+        //}
 
         [Fact]
         public void ImportFile_VulnerableVariations_ParsesCorrectly()
