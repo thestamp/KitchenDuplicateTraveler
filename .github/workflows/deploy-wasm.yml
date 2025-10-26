@@ -35,15 +35,15 @@ jobs:
     
     - name: Change base tag in index.html
       run: |
-        sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' publish/index.html
+        sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' publish/wwwroot/index.html
     
     - name: Add .nojekyll file
-      run: touch publish/.nojekyll
+      run: touch publish/wwwroot/.nojekyll
     
     - name: Deploy to gh-pages branch
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./publish
+        publish_dir: ./publish/wwwroot
         publish_branch: gh-pages
         force_orphan: true
