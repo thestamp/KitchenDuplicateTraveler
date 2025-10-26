@@ -33,31 +33,17 @@ jobs:
     - name: Publish Blazor WASM
       run: dotnet publish Traveler.Wasm.Client/Traveler.Wasm.Client.csproj -c Release -o publish
     
-    - name: Debug - List publish directory
-      run: |
-        echo "Contents of publish directory:"
-        ls -laR publish/
-        echo ""
-        echo "Finding index.html:"
-        find publish -name "index.html" -type f
-    
     - name: Change base tag in index.html
       run: |
-        # Find the actual location of index.html and update it
-        INDEX_PATH=$(find publish -name "index.html" -type f | head -n 1)
-        echo "Found index.html at: $INDEX_PATH"
-        sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' "$INDEX_PATH"
+        sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' publish/wwwroot/index.html
     
     - name: Add .nojekyll file
-      run: |
-        # Add .nojekyll to the same directory as index.html
-        INDEX_DIR=$(dirname $(find publish -name "index.html" -type f | head -n 1))
-        touch "$INDEX_DIR/.nojekyll"
+      run: touch publish/wwwroot/.nojekyll
     
     - name: Deploy to gh-pages branch
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: $(dirname $(find publish -name "index.html" -type f | head -n 1))
+        publish_dir: ./publish/wwwroot
         publish_branch: gh-pages
         force_orphan: true
