@@ -108,7 +108,8 @@ namespace Traveler.Console
                                 if (matchingResult != null)
                                 {
                                     detail.Contract = matchingResult.GameResult.Contract ?? "";
-                                    detail.Declarer = matchingResult.GameResult.Declarer.ToString().Substring(0, 1);
+                                    var declarerStr = matchingResult.GameResult.Declarer?.ToString() ?? "";
+                                    detail.Declarer = !string.IsNullOrEmpty(declarerStr) ? declarerStr.Substring(0, 1) : "";
                                     detail.TricksMade = matchingResult.GameResult.Result;
                                 }
                             }
