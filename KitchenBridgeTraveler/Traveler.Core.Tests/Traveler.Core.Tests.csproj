@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Traveller.Core\Traveler.Core.csproj" />
+    <ProjectReference Include="..\Traveler.Core\Traveler.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
