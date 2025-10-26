@@ -361,6 +361,72 @@ namespace Traveller.Core.Tests
             }
         }
 
+        [Fact]
+        public void ImportFile_TestPbnFile_FormattedHandsAndMatchPoints()
+        {
+            // Read the test.pbn file
+            var testFilePath = Path.Combine("", "test.pbn");
+            
+            if (!File.Exists(testFilePath))
+            {
+                _output.WriteLine($"Test file not found at: {testFilePath}");
+                Assert.True(File.Exists(testFilePath), "test.pbn file should exist");
+                return;
+            }
+
+            var fileContent = File.ReadAllText(testFilePath);
+            var fileImportService = new FileImportService();
+            var matchPointsService = new MatchPointsService();
+            var games = fileImportService.ImportFile(fileContent);
+
+            Assert.NotEmpty(games);
+
+            foreach (var game in games.OrderBy(g => g.BoardNumber))
+            {
+                _output.WriteLine($"");
+                _output.WriteLine($"╔═══════════════════════════════════════════════════════════════════════════════╗");
+                _output.WriteLine($"║ BOARD {game.BoardNumber,-2}  Dealer: {game.Dealer,-5}  Vulnerable: {game.Vulnerable,-10}                     ║");
+                _output.WriteLine($"╚═══════════════════════════════════════════════════════════════════════════════╝");
+                _output.WriteLine($"");
+                
+                // Display hands formatted nicely
+                _output.WriteLine("HANDS:");
+                _output.WriteLine("──────────────────────────────────────────────────────────────────────────────────");
+                foreach (var player in new[] { GameModel.Player.North, GameModel.Player.East, GameModel.Player.South, GameModel.Player.West })
+                {
+                    if (game.PlayerHands.ContainsKey(player))
+                    {
+                        _output.WriteLine($"{FormatPlayerName(player)}: {FormatHand(game.PlayerHands[player])}");
+                    }
+                }
+                _output.WriteLine($"");
+                
+                // Calculate and display match points
+                if (game.GameResults.Any())
+                {
+                    // Calculate NS scores for all results
+                    var nsScores = game.GameResults
+                        .Select(r => CalculateNorthScore(r, game.Vulnerable))
+                        .ToList();
+                    
+                    // Get all ranking options
+                    var options = matchPointsService.GetAllRankingOptions(nsScores);
+                    
+                    _output.WriteLine("MATCH POINTS AWARDED:");
+                    _output.WriteLine("──────────────────────────────────────────────────────────────────────────────────");
+                    _output.WriteLine($"  {"Score",-10} {"Ranking",-35} {"MP"}");
+                    _output.WriteLine("──────────────────────────────────────────────────────────────────────────────────");
+
+                    foreach (var option in options)
+                    {
+                        _output.WriteLine($"  {option.ScoreDisplay,-10} {option.Ranking,-35} {option.MatchPoints:F1}");
+                    }
+                    
+                    _output.WriteLine($"");
+                }
+            }
+        }
+
         private string FormatPlayerName(GameModel.Player player)
         {
             return $"{player,-5}";
