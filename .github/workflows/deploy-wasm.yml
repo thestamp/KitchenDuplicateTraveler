@@ -5,6 +5,7 @@ on:
     branches:
       - main        # Deploy when pushing to main
       - master      # Or master if that's your default
+      - feature/web
 permissions:
   contents: write  # Need write permissions to push to gh-pages branch
 

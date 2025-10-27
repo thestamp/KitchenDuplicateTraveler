@@ -136,13 +136,14 @@ namespace Traveler.Core.Services
                     column.Item().Text("MATCH POINTS AWARDED:").FontSize(8).Bold();
                     column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
 
-                    // Table header - expanded columns
+                    // Table header - with N/S and E/W columns
                     column.Item().Row(row =>
                     {
                         row.ConstantItem(60).Text("Contract").FontSize(8).Bold();
                         row.ConstantItem(35).Text("Tricks").FontSize(8).Bold();
                         row.ConstantItem(45).Text("Score").FontSize(8).Bold();
-                        row.ConstantItem(30).Text("MP").FontSize(8).Bold();
+                        row.ConstantItem(30).Text("N/S").FontSize(8).Bold();
+                        row.ConstantItem(30).Text("E/W").FontSize(8).Bold();
                         row.RelativeItem().Text("Ranking").FontSize(8).Bold();
                     });
 
@@ -170,6 +171,7 @@ namespace Traveler.Core.Services
                             row.ConstantItem(35).Text(tricksDisplay).FontSize(8);
                             row.ConstantItem(45).Text(scoreDisplay).FontSize(8);
                             row.ConstantItem(30).Text($"{detail.MatchPoints:F1}").FontSize(8);
+                            row.ConstantItem(30).Text($"{detail.EastWestMatchPoints:F1}").FontSize(8);
                             row.RelativeItem().Text(detail.Ranking).FontSize(8);
                         });
                     }

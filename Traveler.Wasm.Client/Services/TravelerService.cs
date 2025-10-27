@@ -73,12 +73,16 @@ namespace Traveler.Wasm.Client.Services
                     // Get all ranking options (includes actual scores and theoretical positions)
                     var matchPointsOptions = _matchPointsService.GetAllRankingOptions(nsScores);
 
+                    // Calculate the maximum possible match points
+                    double maxMatchPoints = nsScores.Count;
+
                     // Create score details from match points options
                     var scoreDetails = matchPointsOptions.Select(option =>
                     {
                         var detail = new GameData.ScoreDetail
                         {
                             MatchPoints = option.MatchPoints,
+                            EastWestMatchPoints = maxMatchPoints - option.MatchPoints,
                             Ranking = option.Ranking,
                             IsStoredScore = option.IsStoredScore
                         };
