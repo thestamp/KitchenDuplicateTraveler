@@ -21,11 +21,19 @@
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mr-2">
                     by Jeff Lefebvre
                 </MudText>
-                <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler" 
-                         Target="_blank" 
-                         Typo="Typo.body2">
+                <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler"
+                         Target="_blank"
+                         Typo="Typo.body2"
+                         Class="mr-2">
                     <MudIcon Icon="@Icons.Custom.Brands.GitHub" Size="Size.Small" Class="mr-1" />
                     GitHub
+                </MudLink>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mr-1">•</MudText>
+                <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler#usage-instructions"
+                         Target="_blank"
+                         Typo="Typo.body2">
+                    <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Small" Class="mr-1" />
+                    Usage Instructions
                 </MudLink>
             </div>
             <MudText Typo="Typo.body1" Class="mb-4">
@@ -93,20 +101,14 @@
             <MudText Typo="Typo.body2" Class="mb-2">
                 Kitchen Duplicate Traveler helps bridge players analyze tournament results. Upload a PBN (Portable Bridge Notation) file to:
             </MudText>
-            <MudList T="string" Dense="true">
-                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
-                    <MudText Typo="Typo.body2">Compare your scores with tournament results</MudText>
-                </MudListItem>
-                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
-                    <MudText Typo="Typo.body2">Calculate match points for each board</MudText>
-                </MudListItem>
-                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
-                    <MudText Typo="Typo.body2">See rankings and all possible score positions</MudText>
-                </MudListItem>
-                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
-                    <MudText Typo="Typo.body2">Print professional traveler sheets</MudText>
-                </MudListItem>
-            </MudList>
+           
+            <MudText Typo="Typo.body2" Class="mt-3">
+                <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Small" Class="mr-1" />
+                Need help? Check out our
+                <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler#usage-instructions" Target="_blank">
+                    step-by-step usage instructions
+                </MudLink>.
+            </MudText>
         </MudPaper>
     }
     else
