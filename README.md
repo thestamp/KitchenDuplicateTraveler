@@ -86,7 +86,7 @@ The generated PDF shows for each board:
 - **Ranking**: Where this result placed (1st, 2nd, tied, etc.)
 
 ## Technology
-Web App build with .NET 9 MudBlazor
+Web App built with .NET 9 MudBlazor
 
 Downloadable app built with .NET 8 and QuestPDF for professional PDF generation.
 
