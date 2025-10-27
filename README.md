@@ -4,6 +4,8 @@ Play kitchen duplicate bridge and see how your score compares with a tournament!
 
 **🌐 Try it online:** [https://thestamp.github.io/KitchenDuplicateTraveler/](https://thestamp.github.io/KitchenDuplicateTraveler/)
 
+![example screenshot](images/example.png)
+
 ## Overview
 
 Kitchen Duplicate Traveler is a tool designed for bridge enthusiasts who play duplicate bridge at home (often called "kitchen duplicate"). This application allows you to:
