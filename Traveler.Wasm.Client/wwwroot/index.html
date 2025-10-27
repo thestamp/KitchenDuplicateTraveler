@@ -1,5 +1,4 @@
-﻿eler.Wasm.Client/wwwroot/index.html
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -22,6 +21,7 @@
     <div id="app">
         <div style="position:absolute; top:30vh; width:100%; text-align:center">
             <p style="font-size:2rem"><em>Loading...</em></p>
+            <p id="status-message" style="font-size:1rem; color: #666; margin-top: 20px;">Initializing...</p>
         </div>
     </div>
 
@@ -35,9 +35,19 @@
         console.log('🔍 DEBUG: About to load blazor.webassembly.js');
         console.log('🔍 DEBUG: Expected path:', document.querySelector('base').href + '_framework/blazor.webassembly.js');
 
+        // Update status message
+        function updateStatus(message) {
+            const statusEl = document.getElementById('status-message');
+            if (statusEl) {
+                statusEl.textContent = message;
+                console.log('📊 STATUS:', message);
+            }
+        }
+
         // Log when scripts start loading
         window.addEventListener('load', function () {
             console.log('✅ DEBUG: Window load event fired');
+            updateStatus('Resources loaded, waiting for Blazor...');
         });
 
         // Catch any errors
@@ -47,6 +57,7 @@
             console.error('❌ DEBUG: Error lineno:', event.lineno);
             console.error('❌ DEBUG: Error colno:', event.colno);
             console.error('❌ DEBUG: Error object:', event.error);
+            updateStatus('ERROR: ' + event.message);
         });
 
         // Monitor resource loading
@@ -57,11 +68,75 @@
                 }
             });
         });
+
+        // Hook into Blazor startup if available
+        if (window.Blazor) {
+            console.log('🔥 DEBUG: Blazor object exists before script load');
+        }
+
+        // Monitor for Blazor object creation
+        let blazorCheckCount = 0;
+        const blazorCheck = setInterval(function () {
+            blazorCheckCount++;
+            if (window.Blazor) {
+                console.log('🔥 DEBUG: Blazor object detected after', blazorCheckCount, 'checks');
+                updateStatus('Blazor object found, starting...');
+                clearInterval(blazorCheck);
+            } else if (blazorCheckCount > 50) {
+                console.error('❌ DEBUG: Blazor object never appeared after 50 checks (5 seconds)');
+                updateStatus('ERROR: Blazor failed to initialize');
+                clearInterval(blazorCheck);
+            }
+        }, 100);
+
+        // Check for WebAssembly support
+        if (typeof WebAssembly === 'object') {
+            console.log('✅ DEBUG: WebAssembly is supported');
+            updateStatus('WebAssembly supported');
+        } else {
+            console.error('❌ DEBUG: WebAssembly is NOT supported in this browser');
+            updateStatus('ERROR: WebAssembly not supported');
+        }
     </script>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>
         console.log('🔍 DEBUG: blazor.webassembly.js script tag processed');
+
+        // Manually start Blazor with error handling
+        setTimeout(function () {
+            console.log('🚀 DEBUG: Attempting to start Blazor manually');
+
+            if (window.Blazor) {
+                console.log('🔥 DEBUG: Blazor object exists, calling start()');
+                updateStatus('Starting Blazor...');
+
+                Blazor.start().then(function () {
+                    console.log('✅ DEBUG: Blazor.start() completed successfully');
+                    updateStatus('Blazor started!');
+                }).catch(function (error) {
+                    console.error('❌ DEBUG: Blazor.start() failed:', error);
+                    console.error('❌ DEBUG: Error stack:', error.stack);
+                    updateStatus('ERROR: Blazor start failed - ' + error.message);
+                });
+            } else {
+                console.error('❌ DEBUG: Blazor object not found, cannot start');
+                updateStatus('ERROR: Blazor object not found');
+
+                // Try to fetch blazor.boot.json to see if it's accessible
+                fetch('_framework/blazor.boot.json')
+                    .then(function (response) {
+                        console.log('📋 DEBUG: blazor.boot.json response:', response.status);
+                        return response.json();
+                    })
+                    .then(function (bootConfig) {
+                        console.log('📋 DEBUG: blazor.boot.json content:', bootConfig);
+                    })
+                    .catch(function (error) {
+                        console.error('❌ DEBUG: Failed to fetch blazor.boot.json:', error);
+                    });
+            }
+        }, 1000);
     </script>
 
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
