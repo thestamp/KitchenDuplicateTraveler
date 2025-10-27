@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿eler.Wasm.Client/wwwroot/index.html
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,6 +9,13 @@
     <base href="/" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="css/print.css" rel="stylesheet" media="print" />
+    <script>
+        console.log('🔍 DEBUG: index.html loaded');
+        console.log('🔍 DEBUG: Base href:', document.querySelector('base').href);
+        console.log('🔍 DEBUG: Current URL:', window.location.href);
+        console.log('🔍 DEBUG: Origin:', window.location.origin);
+        console.log('🔍 DEBUG: Pathname:', window.location.pathname);
+    </script>
 </head>
 
 <body>
@@ -22,9 +30,44 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
-    
+
+    <script>
+        console.log('🔍 DEBUG: About to load blazor.webassembly.js');
+        console.log('🔍 DEBUG: Expected path:', document.querySelector('base').href + '_framework/blazor.webassembly.js');
+
+        // Log when scripts start loading
+        window.addEventListener('load', function () {
+            console.log('✅ DEBUG: Window load event fired');
+        });
+
+        // Catch any errors
+        window.addEventListener('error', function (event) {
+            console.error('❌ DEBUG: Error caught:', event.message);
+            console.error('❌ DEBUG: Error source:', event.filename);
+            console.error('❌ DEBUG: Error lineno:', event.lineno);
+            console.error('❌ DEBUG: Error colno:', event.colno);
+            console.error('❌ DEBUG: Error object:', event.error);
+        });
+
+        // Monitor resource loading
+        window.addEventListener('load', function () {
+            performance.getEntriesByType('resource').forEach(function (resource) {
+                if (resource.name.includes('_framework') || resource.name.includes('_content')) {
+                    console.log('📦 DEBUG: Resource loaded:', resource.name, 'Status:', resource.transferSize > 0 ? 'SUCCESS' : 'CACHED/FAILED');
+                }
+            });
+        });
+    </script>
+
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        console.log('🔍 DEBUG: blazor.webassembly.js script tag processed');
+    </script>
+
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script>
+        console.log('🔍 DEBUG: MudBlazor.min.js script tag processed');
+    </script>
 </body>
 
 </html>
