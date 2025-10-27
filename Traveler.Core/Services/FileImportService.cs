@@ -12,7 +12,10 @@ namespace Traveler.Core.Services
             if (string.IsNullOrWhiteSpace(fileContent))
                 return games;
 
-            var lines = fileContent.Split(new[] { '\r', '\n' }, StringSplitOptions.None);
+            // Normalize line endings - CRITICAL for browser file uploads
+            fileContent = fileContent.Replace("\r\n", "\n").Replace("\r", "\n");
+            var lines = fileContent.Split('\n', StringSplitOptions.None);
+            
             GameModel currentGame = null;
             List<string> currentTableLines = new List<string>();
             bool inScoreTable = false;
