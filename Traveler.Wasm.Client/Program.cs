@@ -1,9 +1,15 @@
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Traveler.Wasm.Client.Services;
 using Traveler.Core.Services;
+using Traveler.Wasm.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Mount Routes to #app div
+builder.RootComponents.Add<Routes>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
 
