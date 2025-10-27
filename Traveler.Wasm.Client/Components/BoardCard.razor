@@ -3,7 +3,7 @@
 <MudPaper Class="board-card" Elevation="2">
     <div class="board-header">
         <MudText Typo="Typo.body2" Class="header-line">╔═══════════════════════════════════════════════════╗</MudText>
-        <MudText Typo="Typo.body2" Class="header-line">║ Board @GameData.GameModel.BoardNumber.ToString("D2")  Dealer: @FormatPlayer(GameData.GameModel.Dealer)  Vulnerable: @FormatVulnerable(GameData.GameModel.Vulnerable)   ║</MudText>
+        <MudText Typo="Typo.body2" Class="header-line">║ Board @GameData.GameModel.BoardNumber.ToString("D2")  Dealer: @FormatPlayer(GameData.GameModel.Dealer)  Vulnerable: @FormatVulnerable(GameData.GameModel.Vulnerable)              ║</MudText>
         <MudText Typo="Typo.body2" Class="header-line">╚═══════════════════════════════════════════════════╝</MudText>
     </div>
 
@@ -29,7 +29,8 @@
                     <span class="col-contract">Contract</span>
                     <span class="col-tricks">Tricks</span>
                     <span class="col-score">Score</span>
-                    <span class="col-mp">MP</span>
+                    <span class="col-ns">N/S</span>
+                    <span class="col-ew">E/W</span>
                     <span class="col-ranking">Ranking</span>
                 </div>
                 @foreach (var detail in GameData.ScoreDetails)
@@ -38,7 +39,8 @@
                         <span class="col-contract">@FormatContract(detail)</span>
                         <span class="col-tricks">@FormatTricks(detail)</span>
                         <span class="col-score">@FormatScore(detail)</span>
-                        <span class="col-mp">@detail.MatchPoints.ToString("F1")</span>
+                        <span class="col-ns">@detail.MatchPoints.ToString("F1")</span>
+                        <span class="col-ew">@detail.EastWestMatchPoints.ToString("F1")</span>
                         <span class="col-ranking">@detail.Ranking</span>
                     </div>
                 }
@@ -136,7 +138,7 @@
     .score-header,
     .score-row {
         display: grid;
-        grid-template-columns: 100px 50px 60px 40px 1fr;
+        grid-template-columns: 100px 50px 60px 40px 40px 1fr;
         gap: 0.25rem;
         padding: 0.15rem 0;
     }

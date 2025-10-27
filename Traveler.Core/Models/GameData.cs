@@ -11,6 +11,7 @@ namespace Traveler.Core.Models
             public int TricksMade { get; set; }
             public int Score { get; set; }
             public double MatchPoints { get; set; }
+            public double EastWestMatchPoints { get; set; }
             public string Ranking { get; set; } = string.Empty;
             public bool IsStoredScore { get; set; } // True if this is an actual game result, false if theoretical position
         }
