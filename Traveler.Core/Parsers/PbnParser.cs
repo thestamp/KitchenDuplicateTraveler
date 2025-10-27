@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using Traveler.Core.Models;
-using Traveler.Core.Parsers;
 
 
 using System.Text.RegularExpressions;
