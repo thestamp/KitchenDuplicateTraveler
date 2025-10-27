@@ -1,7 +1,5 @@
 ﻿using Traveler.Core.Models;
 using Traveler.Core.Parsers;
-using System.Diagnostics;
-
 namespace Traveler.Core.Services
 {
     public class FileImportService
