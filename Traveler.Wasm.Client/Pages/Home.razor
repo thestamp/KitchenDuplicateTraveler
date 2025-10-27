@@ -14,13 +14,19 @@
     @if (!_showResults)
     {
         <MudPaper Class="pa-6" Elevation="3">
-            <div class="d-flex align-center mb-4">
-                <MudIconButton Icon="@Icons.Material.Filled.Home" 
-                               Color="Color.Primary" 
-                               Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
-                               Title="Go to Home Page"
-                               Class="mr-2" />
+            <div class="d-flex align-center mb-2">
                 <MudText Typo="Typo.h3" GutterBottom="false">Kitchen Duplicate Traveler</MudText>
+            </div>
+            <div class="d-flex align-center mb-4">
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mr-2">
+                    by Jeff Lefebvre
+                </MudText>
+                <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler" 
+                         Target="_blank" 
+                         Typo="Typo.body2">
+                    <MudIcon Icon="@Icons.Material.Filled.GitHub" Size="Size.Small" Class="mr-1" />
+                    GitHub
+                </MudLink>
             </div>
             <MudText Typo="Typo.body1" Class="mb-4">
                 Upload a PBN file or paste a URL to generate duplicate bridge traveler sheets with match points calculations.
@@ -108,11 +114,6 @@
         <MudPaper Class="pa-4 mb-4 no-print" Elevation="2">
             <div class="d-flex justify-space-between align-center">
                 <div class="d-flex align-center">
-                    <MudIconButton Icon="@Icons.Material.Filled.Home" 
-                                   Color="Color.Primary" 
-                                   Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
-                                   Title="Go to Home Page"
-                                   Class="mr-2" />
                     <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
                 </div>
                 <div>

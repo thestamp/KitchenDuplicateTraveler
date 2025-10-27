@@ -8,11 +8,35 @@
     <MudAppBar Elevation="1">
         <MudText Typo="Typo.h5" Class="ml-3">Kitchen Duplicate Traveler</MudText>
         <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.GitHub"
+                       Color="Color.Inherit"
+                       Href="https://github.com/thestamp/KitchenDuplicateTraveler"
+                       Target="_blank"
+                       Title="View on GitHub" />
         <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
     </MudAppBar>
     <MudMainContent Class="pt-16 pa-4">
         @Body
     </MudMainContent>
+    <MudAppBar Bottom="true" Elevation="0" Class="no-print" Style="top: auto; bottom: 0;">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex justify-center align-center py-2">
+            <MudText Typo="Typo.body2" Class="mr-2">
+                Created by <strong>Jeff Lefebvre</strong>
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mr-2">•</MudText>
+            <MudLink Href="https://github.com/thestamp/KitchenDuplicateTraveler"
+                     Target="_blank"
+                     Typo="Typo.body2"
+                     Color="Color.Inherit">
+                <MudIcon Icon="@Icons.Material.Filled.GitHub" Size="Size.Small" Class="mr-1" />
+                View on GitHub
+            </MudLink>
+            <MudText Typo="Typo.body2" Class="mx-2">•</MudText>
+            <MudText Typo="Typo.body2">
+                MIT License
+            </MudText>
+        </MudContainer>
+    </MudAppBar>
 </MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
@@ -87,5 +111,3 @@
         false => Icons.Material.Outlined.DarkMode,
     };
 }
-
-
