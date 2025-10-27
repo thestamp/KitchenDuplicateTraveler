@@ -1,4 +1,4 @@
-﻿    @page "/"
+﻿@page "/"
 @using Microsoft.AspNetCore.Components.Forms
 @using Traveler.Wasm.Client.Services
 @using Traveler.Wasm.Client.Components
@@ -6,6 +6,7 @@
 @inject TravelerService TravelerService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <PageTitle>Kitchen Duplicate Traveler</PageTitle>
 
@@ -13,7 +14,14 @@
     @if (!_showResults)
     {
         <MudPaper Class="pa-6" Elevation="3">
-            <MudText Typo="Typo.h3" GutterBottom="true">Kitchen Duplicate Traveler</MudText>
+            <div class="d-flex align-center mb-4">
+                <MudIconButton Icon="@Icons.Material.Filled.Home" 
+                               Color="Color.Primary" 
+                               Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
+                               Title="Go to Home Page"
+                               Class="mr-2" />
+                <MudText Typo="Typo.h3" GutterBottom="false">Kitchen Duplicate Traveler</MudText>
+            </div>
             <MudText Typo="Typo.body1" Class="mb-4">
                 Upload a PBN file or paste a URL to generate duplicate bridge traveler sheets with match points calculations.
             </MudText>
@@ -98,7 +106,14 @@
     {
         <MudPaper Class="pa-4 mb-4 no-print" Elevation="2">
             <div class="d-flex justify-space-between align-center">
-                <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
+                <div class="d-flex align-center">
+                    <MudIconButton Icon="@Icons.Material.Filled.Home" 
+                                   Color="Color.Primary" 
+                                   Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
+                                   Title="Go to Home Page"
+                                   Class="mr-2" />
+                    <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
+                </div>
                 <div>
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
@@ -146,7 +161,6 @@
 
             _boardData = await TravelerService.ProcessPbnContentAsync(content);
             _showResults = true;
-            Snackbar.Add($"Successfully processed {_boardData.Count} board(s)", Severity.Success);
         }
         catch (Exception ex)
         {
@@ -170,7 +184,6 @@
         {
             _boardData = await TravelerService.ProcessPbnFromUrlAsync(_pbnUrl!);
             _showResults = true;
-            Snackbar.Add($"Successfully processed {_boardData.Count} board(s)", Severity.Success);
         }
         catch (Exception ex)
         {
