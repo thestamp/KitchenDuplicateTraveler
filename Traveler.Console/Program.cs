@@ -1,5 +1,5 @@
-using Traveler.Console.Services;
 using Traveler.Core.Services;
+using Traveler.Core.Models;
 
 namespace Traveler.Console
 {
@@ -9,28 +9,47 @@ namespace Traveler.Console
         {
             try
             {
-                // Check if a file was dragged onto the executable
+                string inputFilePath;
+
+                // Check if a file was provided as argument (drag and drop)
                 if (args.Length == 0)
                 {
-                    System.Console.WriteLine("ERROR: No file provided.");
-                    System.Console.WriteLine("Usage: Drag and drop a PBN file onto this executable.");
-                    System.Console.WriteLine("\nPress any key to exit...");
-                    System.Console.ReadKey();
-                    return;
-                }
+                    // Prompt user for file path
+                    System.Console.WriteLine("PBN File Processor");
+                    System.Console.WriteLine("==================");
+                    System.Console.WriteLine();
+                    System.Console.Write("Enter the path to the PBN file: ");
+                    inputFilePath = System.Console.ReadLine()?.Trim() ?? "";
 
-                string inputFilePath = args[0];
+                    // Remove quotes if user copy-pasted a path with quotes
+                    if (inputFilePath.StartsWith("\"") && inputFilePath.EndsWith("\""))
+                    {
+                        inputFilePath = inputFilePath.Substring(1, inputFilePath.Length - 2);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(inputFilePath))
+                    {
+                        System.Console.WriteLine("\nERROR: No file path provided.");
+                        System.Console.WriteLine("\nPress any key to exit...");
+                        System.Console.ReadKey();
+                        return;
+                    }
+                }
+                else
+                {
+                    inputFilePath = args[0];
+                }
 
                 // Validate file exists
                 if (!File.Exists(inputFilePath))
                 {
-                    System.Console.WriteLine($"ERROR: File not found: {inputFilePath}");
+                    System.Console.WriteLine($"\nERROR: File not found: {inputFilePath}");
                     System.Console.WriteLine("\nPress any key to exit...");
                     System.Console.ReadKey();
                     return;
                 }
 
-                System.Console.WriteLine($"Processing file: {inputFilePath}");
+                System.Console.WriteLine($"\nProcessing file: {inputFilePath}");
 
                 // Read and parse the PBN file
                 var fileContent = File.ReadAllText(inputFilePath);
@@ -50,30 +69,62 @@ namespace Traveler.Console
                 // Calculate match points for each board
                 var matchPointsService = new MatchPointsService();
                 var scoringService = new BridgeScoringService();
-                var boardData = new List<Traveler.Console.Models.GameData>();
+                var boardData = new List<GameData>();
 
                 foreach (var game in games.OrderBy(g => g.BoardNumber))
                 {
                     if (game.GameResults.Any())
                     {
                         // Calculate NS scores for all results
-                        var nsScores = game.GameResults
-                            .Select(r => scoringService.CalculateNorthScore(r, game.Vulnerable))
+                        var scoredResults = game.GameResults
+                            .Select(r => new
+                            {
+                                GameResult = r,
+                                NorthScore = scoringService.CalculateNorthScore(r, game.Vulnerable)
+                            })
                             .ToList();
 
-                        // Get all ranking options
+                        var nsScores = scoredResults.Select(sr => sr.NorthScore).ToList();
+
+                        // Get all ranking options (includes actual scores and theoretical positions)
                         var matchPointsOptions = matchPointsService.GetAllRankingOptions(nsScores);
 
-                        // Create score details
-                        var scoreDetails = matchPointsOptions.Select(option => new Traveler.Console.Models.GameData.ScoreDetail
+                        // Create score details from match points options
+                        var scoreDetails = matchPointsOptions.Select(option =>
                         {
-                            Score = option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score) ? score : 0,
-                            MatchPoints = option.MatchPoints,
-                            Ranking = option.Ranking,
-                            IsStoredScore = option.IsStoredScore
+                            var detail = new GameData.ScoreDetail
+                            {
+                                MatchPoints = option.MatchPoints,
+                                Ranking = option.Ranking,
+                                IsStoredScore = option.IsStoredScore
+                            };
+
+                            if (option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score))
+                            {
+                                detail.Score = score;
+
+                                // Find the first game result with this score
+                                var matchingResult = scoredResults.FirstOrDefault(sr => sr.NorthScore == score);
+                                if (matchingResult != null)
+                                {
+                                    detail.Contract = matchingResult.GameResult.Contract ?? "";
+                                    var declarerStr = matchingResult.GameResult.Declarer.ToString() ?? "";
+                                    detail.Declarer = !string.IsNullOrEmpty(declarerStr) ? declarerStr.Substring(0, 1) : "";
+                                    detail.TricksMade = matchingResult.GameResult.Result;
+                                }
+                            }
+                            else
+                            {
+                                detail.Score = 0;
+                                detail.Contract = "";
+                                detail.Declarer = "";
+                                detail.TricksMade = 0;
+                            }
+
+                            return detail;
                         }).ToList();
 
-                        var gameData = new Traveler.Console.Models.GameData
+                        var gameData = new GameData
                         {
                             GameModel = game,
                             ScoreDetails = scoreDetails

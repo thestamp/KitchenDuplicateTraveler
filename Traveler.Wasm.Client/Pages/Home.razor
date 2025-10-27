@@ -1,0 +1,215 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Forms
+@using Traveler.Wasm.Client.Services
+@using Traveler.Wasm.Client.Components
+@using Traveler.Core.Models
+@inject TravelerService TravelerService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<PageTitle>Kitchen Duplicate Traveler</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (!_showResults)
+    {
+        <MudPaper Class="pa-6" Elevation="3">
+            <div class="d-flex align-center mb-4">
+                <MudIconButton Icon="@Icons.Material.Filled.Home" 
+                               Color="Color.Primary" 
+                               Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
+                               Title="Go to Home Page"
+                               Class="mr-2" />
+                <MudText Typo="Typo.h3" GutterBottom="false">Kitchen Duplicate Traveler</MudText>
+            </div>
+            <MudText Typo="Typo.body1" Class="mb-4">
+                Upload a PBN file or paste a URL to generate duplicate bridge traveler sheets with match points calculations.
+            </MudText>
+
+            <MudDivider Class="mb-4" />
+
+            <MudText Typo="Typo.h6" GutterBottom="true">Option 1: Upload PBN File</MudText>
+            <MudFileUpload T="IBrowserFile" FilesChanged="HandleFileSelected" Accept=".pbn">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               Disabled="@_processing">
+                        Upload PBN File
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+
+            @if (_selectedFileName != null)
+            {
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    Selected: @_selectedFileName
+                </MudText>
+            }
+
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.h6" GutterBottom="true">Option 2: Download from URL</MudText>
+            <MudTextField @bind-Value="_pbnUrl"
+                          Label="PBN File URL"
+                          Variant="Variant.Outlined"
+                          HelperText="Enter the URL of a PBN file"
+                          Disabled="@_processing"
+                          Immediate="true" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Download"
+                       OnClick="HandleUrlDownload"
+                       Class="mt-2"
+                       Disabled="@(string.IsNullOrWhiteSpace(_pbnUrl) || _processing)">
+                Download and Process
+            </MudButton>
+
+            @if (_processing)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-4" />
+                <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
+                    Processing PBN file...
+                </MudText>
+            }
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4" CloseIconClicked="() => _errorMessage = null" ShowCloseIcon="true">
+                    @_errorMessage
+                </MudAlert>
+            }
+        </MudPaper>
+
+        <MudPaper Class="pa-4 mt-4" Elevation="2">
+            <MudText Typo="Typo.h6" GutterBottom="true">About This Tool</MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Kitchen Duplicate Traveler helps bridge players analyze tournament results. Upload a PBN (Portable Bridge Notation) file to:
+            </MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
+                    <MudText Typo="Typo.body2">Compare your scores with tournament results</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
+                    <MudText Typo="Typo.body2">Calculate match points for each board</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
+                    <MudText Typo="Typo.body2">See rankings and all possible score positions</MudText>
+                </MudListItem>
+                <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
+                    <MudText Typo="Typo.body2">Print professional traveler sheets</MudText>
+                </MudListItem>
+            </MudList>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="pa-4 mb-4 no-print" Elevation="2">
+            <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                    <MudIconButton Icon="@Icons.Material.Filled.Home" 
+                                   Color="Color.Primary" 
+                                   Href="https://thestamp.github.io/KitchenDuplicateTraveler/home"
+                                   Title="Go to Home Page"
+                                   Class="mr-2" />
+                    <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
+                </div>
+                <div>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Print"
+                               OnClick="PrintResults"
+                               Class="mr-2">
+                        Print
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="GoBack">
+                        Upload Another File
+                    </MudButton>
+                </div>
+            </div>
+        </MudPaper>
+
+        <div class="print-container">
+            <TravelerDisplay Boards="@_boardData" />
+        </div>
+    }
+</MudContainer>
+
+@code {
+    private bool _processing = false;
+    private bool _showResults = false;
+    private string? _selectedFileName;
+    private string? _pbnUrl;
+    private string? _errorMessage;
+    private List<GameData> _boardData = new();
+
+    private async Task HandleFileSelected(IBrowserFile file)
+    {
+        _errorMessage = null;
+        _processing = true;
+        _selectedFileName = file.Name;
+        StateHasChanged();
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+
+            _boardData = await TravelerService.ProcessPbnContentAsync(content);
+            _showResults = true;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error processing file: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleUrlDownload()
+    {
+        _errorMessage = null;
+        _processing = true;
+        StateHasChanged();
+
+        try
+        {
+            _boardData = await TravelerService.ProcessPbnFromUrlAsync(_pbnUrl!);
+            _showResults = true;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error downloading/processing file: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PrintResults()
+    {
+        // Trigger browser print dialog
+        await JSRuntime.InvokeVoidAsync("window.print");
+    }
+
+    private void GoBack()
+    {
+        _showResults = false;
+        _selectedFileName = null;
+        _pbnUrl = null;
+        _errorMessage = null;
+        _boardData = new();
+    }
+}
