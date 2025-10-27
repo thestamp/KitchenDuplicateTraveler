@@ -3,8 +3,6 @@ using System.Text.RegularExpressions;
 using Traveler.Core.Models;
 
 
-using System.Text.RegularExpressions;
-using Traveler.Core.Models;
 
 namespace Traveler.Core.Parsers
 {
