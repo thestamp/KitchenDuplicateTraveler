@@ -90,7 +90,7 @@
         padding: 0.75rem;
         font-family: 'Courier New', monospace;
         font-size: 0.7rem;
-        height: 100%;
+        /* REMOVED: height: 100% - this was constraining the card */
         display: flex;
         flex-direction: column;
     }
@@ -106,10 +106,10 @@
     }
 
     .board-content {
-        flex: 1;
+        /* REMOVED: flex: 1 - no longer needed without height constraint */
         display: flex;
         flex-direction: column;
-        overflow: visible; /* CHANGED: was 'hidden' */
+        overflow: visible;
     }
 
     .section-title {
@@ -131,8 +131,8 @@
 
     .scores-section {
         font-size: 0.65rem;
-        flex: 1;
-        overflow: visible; /* CHANGED: was 'auto' - this was causing scrolling */
+        /* REMOVED: flex: 1 - no longer needed */
+        overflow: visible;
     }
 
     .score-header,
