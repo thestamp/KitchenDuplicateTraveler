@@ -1,3 +1,9 @@
+﻿using System.Diagnostics.Contracts;
+using System.Text.RegularExpressions;
+using Traveler.Core.Models;
+using Traveler.Core.Parsers;
+
+
 using System.Text.RegularExpressions;
 using Traveler.Core.Models;
 
@@ -15,7 +21,7 @@ namespace Traveler.Core.Parsers
         public static Dictionary<GameModel.Player, string> ParseDeal(string dealString)
         {
             var hands = new Dictionary<GameModel.Player, string>();
-            
+
             if (string.IsNullOrWhiteSpace(dealString))
                 return hands;
 
@@ -27,12 +33,12 @@ namespace Traveler.Core.Parsers
 
             var dealer = ParsePlayer(parts[0]);
             var handStrings = parts[1].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             if (handStrings.Length != 4)
                 return hands;
 
             var players = new[] { dealer, GetNextPlayer(dealer), GetNextPlayer(GetNextPlayer(dealer)), GetNextPlayer(GetNextPlayer(GetNextPlayer(dealer))) };
-            
+
             for (int i = 0; i < 4; i++)
             {
                 hands[players[i]] = handStrings[i];
@@ -84,40 +90,67 @@ namespace Traveler.Core.Parsers
 
         public static List<GameModel.GameResult> ParseScoreTable(List<string> scoreLines)
         {
+            Console.WriteLine($"🔍 ParseScoreTable called with {scoreLines.Count} lines");
             var results = new List<GameModel.GameResult>();
 
+            int lineNum = 0;
             foreach (var line in scoreLines)
             {
+                lineNum++;
+
                 if (string.IsNullOrWhiteSpace(line))
+                {
+                    Console.WriteLine($"   Line {lineNum}: Empty/whitespace - SKIP");
                     continue;
+                }
 
                 var trimmedLine = line.Trim();
-                
+                Console.WriteLine($"   Line {lineNum}: '{trimmedLine}'");
+
                 // Skip any line that looks like a header or contains special formatting
-                if (trimmedLine.Contains("PairId") || 
-                    trimmedLine.Contains("Declarer") || 
+                if (trimmedLine.Contains("PairId") ||
+                    trimmedLine.Contains("Declarer") ||
                     trimmedLine.Contains("Contract") ||
                     trimmedLine.Contains("Result") ||
                     trimmedLine.Contains("\\") ||
                     trimmedLine.Contains(";") ||
                     trimmedLine.Contains("Denomination"))
+                {
+                    Console.WriteLine($"      ↳ Contains header keyword - SKIP");
                     continue;
+                }
 
                 // Split by multiple spaces to get the fields
                 var parts = Regex.Split(trimmedLine, @"\s+");
+                Console.WriteLine($"      ↳ Split into {parts.Length} parts: [{string.Join(", ", parts)}]");
+
                 if (parts.Length < 5)
+                {
+                    Console.WriteLine($"      ↳ Less than 5 parts - SKIP");
                     continue;
+                }
 
                 if (!int.TryParse(parts[0], out int pairNS))
+                {
+                    Console.WriteLine($"      ↳ Parts[0]='{parts[0]}' not an integer - SKIP");
                     continue;
+                }
                 if (!int.TryParse(parts[1], out int pairEW))
+                {
+                    Console.WriteLine($"      ↳ Parts[1]='{parts[1]}' not an integer - SKIP");
                     continue;
+                }
 
                 var contract = parts[2];
                 var declarer = ParsePlayer(parts[3]);
-                
+
                 if (!int.TryParse(parts[4], out int result))
+                {
+                    Console.WriteLine($"      ↳ Parts[4]='{parts[4]}' not an integer - SKIP");
                     continue;
+                }
+
+                Console.WriteLine($"      ↳ ✅ PARSED: PairNS={pairNS}, PairEW={pairEW}, Contract={contract}, Declarer={declarer}, Result={result}");
 
                 results.Add(new GameModel.GameResult
                 {
@@ -129,6 +162,7 @@ namespace Traveler.Core.Parsers
                 });
             }
 
+            Console.WriteLine($"🔍 ParseScoreTable returning {results.Count} results");
             return results;
         }
 
