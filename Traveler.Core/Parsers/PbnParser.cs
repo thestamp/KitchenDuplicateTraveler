@@ -124,31 +124,67 @@ namespace Traveler.Core.Parsers
                 var parts = Regex.Split(trimmedLine, @"\s+");
                 Console.WriteLine($"      ↳ Split into {parts.Length} parts: [{string.Join(", ", parts)}]");
 
-                if (parts.Length < 5)
+                // Handle both formats:
+                // Format 1 (5 parts): PairNS PairEW Contract Declarer Result
+                // Format 2 (4 parts): TableNum Contract Declarer Result
+                
+                int pairNS, pairEW;
+                string contract;
+                string declarerStr;
+                int result;
+
+                if (parts.Length == 4)
                 {
-                    Console.WriteLine($"      ↳ Less than 5 parts - SKIP");
+                    // Format 2: TableNum Contract Declarer Result
+                    if (!int.TryParse(parts[0], out int tableNum))
+                    {
+                        Console.WriteLine($"      ↳ Parts[0]='{parts[0]}' not an integer - SKIP");
+                        continue;
+                    }
+
+                    contract = parts[1];
+                    declarerStr = parts[2];
+
+                    if (!int.TryParse(parts[3], out result))
+                    {
+                        Console.WriteLine($"      ↳ Parts[3]='{parts[3]}' not an integer - SKIP");
+                        continue;
+                    }
+
+                    // Use table number for both pair IDs (they're not provided in this format)
+                    pairNS = tableNum;
+                    pairEW = tableNum;
+                }
+                else if (parts.Length >= 5)
+                {
+                    // Format 1: PairNS PairEW Contract Declarer Result
+                    if (!int.TryParse(parts[0], out pairNS))
+                    {
+                        Console.WriteLine($"      ↳ Parts[0]='{parts[0]}' not an integer - SKIP");
+                        continue;
+                    }
+                    if (!int.TryParse(parts[1], out pairEW))
+                    {
+                        Console.WriteLine($"      ↳ Parts[1]='{parts[1]}' not an integer - SKIP");
+                        continue;
+                    }
+
+                    contract = parts[2];
+                    declarerStr = parts[3];
+
+                    if (!int.TryParse(parts[4], out result))
+                    {
+                        Console.WriteLine($"      ↳ Parts[4]='{parts[4]}' not an integer - SKIP");
+                        continue;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"      ↳ Unexpected format ({parts.Length} parts) - SKIP");
                     continue;
                 }
 
-                if (!int.TryParse(parts[0], out int pairNS))
-                {
-                    Console.WriteLine($"      ↳ Parts[0]='{parts[0]}' not an integer - SKIP");
-                    continue;
-                }
-                if (!int.TryParse(parts[1], out int pairEW))
-                {
-                    Console.WriteLine($"      ↳ Parts[1]='{parts[1]}' not an integer - SKIP");
-                    continue;
-                }
-
-                var contract = parts[2];
-                var declarer = ParsePlayer(parts[3]);
-
-                if (!int.TryParse(parts[4], out int result))
-                {
-                    Console.WriteLine($"      ↳ Parts[4]='{parts[4]}' not an integer - SKIP");
-                    continue;
-                }
+                var declarer = ParsePlayer(declarerStr);
 
                 Console.WriteLine($"      ↳ ✅ PARSED: PairNS={pairNS}, PairEW={pairEW}, Contract={contract}, Declarer={declarer}, Result={result}");
 
