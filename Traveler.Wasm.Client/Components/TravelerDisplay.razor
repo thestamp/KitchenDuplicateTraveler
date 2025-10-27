@@ -1,0 +1,99 @@
+@using Traveler.Core.Models
+
+<div class="traveler-container">
+    @if (Boards != null && Boards.Any())
+    {
+        @for (int pageIndex = 0; pageIndex < Boards.Count; pageIndex += 4)
+        {
+            <div class="traveler-page">
+                <div class="board-grid">
+                    @* Top row (2 boards) *@
+                    <div class="board-row">
+                        <div class="board-quadrant">
+                            @if (pageIndex < Boards.Count)
+                            {
+                                <BoardCard GameData="@Boards[pageIndex]" />
+                            }
+                        </div>
+                        <div class="board-quadrant">
+                            @if (pageIndex + 1 < Boards.Count)
+                            {
+                                <BoardCard GameData="@Boards[pageIndex + 1]" />
+                            }
+                        </div>
+                    </div>
+                    @* Bottom row (2 boards) *@
+                    <div class="board-row">
+                        <div class="board-quadrant">
+                            @if (pageIndex + 2 < Boards.Count)
+                            {
+                                <BoardCard GameData="@Boards[pageIndex + 2]" />
+                            }
+                        </div>
+                        <div class="board-quadrant">
+                            @if (pageIndex + 3 < Boards.Count)
+                            {
+                                <BoardCard GameData="@Boards[pageIndex + 3]" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<GameData> Boards { get; set; } = new();
+}
+
+<style>
+    .traveler-container {
+        width: 100%;
+    }
+
+    .traveler-page {
+        page-break-after: always;
+        margin-bottom: 1rem;
+    }
+
+    .board-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .board-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .board-quadrant {
+        flex: 1;
+        min-width: 0;
+    }
+
+    @@media print {
+        .traveler-page {
+            width: 11in;
+            height: 8.5in;
+            page-break-after: always;
+            margin: 0;
+            padding: 0.5in;
+        }
+
+        .board-grid {
+            height: 100%;
+        }
+
+        .board-row {
+            flex: 1;
+            gap: 0.5rem;
+        }
+
+        .board-quadrant {
+            padding: 0.25rem;
+        }
+    }
+</style>

@@ -1,0 +1,50 @@
+name: Deploy Blazor WASM to gh-pages branch
+
+on:
+  push:
+    branches:
+      - main        # Deploy when pushing to main
+      - master      # Or master if that's your default
+permissions:
+  contents: write  # Need write permissions to push to gh-pages branch
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Publish Blazor WASM
+      run: dotnet publish Traveler.Wasm.Client/Traveler.Wasm.Client.csproj -c Release -o publish
+    
+    - name: Change base tag in index.html
+      run: |
+        sed -i 's|<base href="/" />|<base href="/KitchenDuplicateTraveler/" />|g' publish/wwwroot/index.html
+    
+    - name: Add .nojekyll file
+      run: touch publish/wwwroot/.nojekyll
+    
+    - name: Copy index.html to 404.html for SPA routing
+      run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+    
+    - name: Deploy to gh-pages branch
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./publish/wwwroot
+        publish_branch: gh-pages
+        force_orphan: true
