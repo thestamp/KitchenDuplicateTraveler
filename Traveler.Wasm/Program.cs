@@ -6,7 +6,7 @@ using Traveler.Wasm.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add HttpClient for downloading PBN files from URLs
-builder.Services.AddScoped(sp => new HttpClient {  });
+builder.Services.AddScoped(sp => new HttpClient());
 
 // Register Core services
 builder.Services.AddScoped<FileImportService>();
