@@ -1,6 +1,10 @@
-# Kitchen Duplicate Traveler
+﻿# Kitchen Duplicate Traveler
 
 Play kitchen duplicate bridge and see how your score compares with a tournament! Calculate your match points as if you were at a real club!
+
+**🌐 Try it online:** [https://thestamp.github.io/KitchenDuplicateTraveler/](https://thestamp.github.io/KitchenDuplicateTraveler/)
+
+![example screenshot](images/example.png)
 
 ## Overview
 
@@ -72,4 +76,4 @@ Built with .NET 8 and QuestPDF for professional PDF generation.
 
 ## License
 
-Community License - Free for personal and educational use
+MIT
