@@ -103,8 +103,19 @@
 
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
-                <MudAlert Severity="Severity.Error" Class="mt-4" CloseIconClicked="() => _errorMessage = null" ShowCloseIcon="true">
-                    @_errorMessage
+                <MudAlert Severity="Severity.Error" Class="mt-4" CloseIconClicked="ClearError" ShowCloseIcon="true">
+                    <div>
+                        @_errorMessage
+                        @if (!string.IsNullOrEmpty(_troubleshootUrl))
+                        {
+                            <div class="mt-2">
+                                <MudLink Href="@_troubleshootUrl" Target="_blank" Color="Color.Error" Underline="Underline.Always">
+                                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="mr-1" />
+                                    Click here to view the PBN file directly on BridgeWebs
+                                </MudLink>
+                            </div>
+                        }
+                    </div>
                 </MudAlert>
             }
         </MudPaper>
@@ -164,13 +175,21 @@
     private string? _selectedFileName;
     private string? _pbnUrl;
     private string? _errorMessage;
+    private string? _troubleshootUrl;
     private string _processingMessage = "Processing...";
     private List<GameData> _boardData = new();
     private BridgeWebsTournament? _selectedTournament;
 
+    private void ClearError()
+    {
+        _errorMessage = null;
+        _troubleshootUrl = null;
+    }
+
     private async Task HandleLoadBridgeWebsTournaments()
     {
         _errorMessage = null;
+        _troubleshootUrl = null;
         _processing = true;
         _processingMessage = "Fetching latest tournaments...";
         StateHasChanged();
@@ -220,7 +239,14 @@
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Error loading tournaments: {ex.Message}";
+            _errorMessage = $"Error loading tournament: {ex.Message}";
+
+            // Provide troubleshooting link if we have a selected tournament
+            if (_selectedTournament != null)
+            {
+                _troubleshootUrl = _selectedTournament.GetPbnUrl();
+            }
+
             Snackbar.Add(_errorMessage, Severity.Error);
         }
         finally
@@ -233,6 +259,7 @@
     private async Task HandleFileSelected(IBrowserFile file)
     {
         _errorMessage = null;
+        _troubleshootUrl = null;
         _processing = true;
         _processingMessage = "Processing PBN file...";
         _selectedFileName = file.Name;
@@ -263,6 +290,7 @@
     private async Task HandleUrlDownload()
     {
         _errorMessage = null;
+        _troubleshootUrl = null;
         _processing = true;
         _processingMessage = "Downloading PBN file...";
         _selectedTournament = null; // Clear tournament info when using URL
@@ -276,6 +304,7 @@
         catch (Exception ex)
         {
             _errorMessage = $"Error downloading/processing file: {ex.Message}";
+            _troubleshootUrl = _pbnUrl; // Provide the URL for troubleshooting
             Snackbar.Add(_errorMessage, Severity.Error);
         }
         finally
@@ -297,6 +326,7 @@
         _selectedFileName = null;
         _pbnUrl = null;
         _errorMessage = null;
+        _troubleshootUrl = null;
         _boardData = new();
         _selectedTournament = null;
     }
