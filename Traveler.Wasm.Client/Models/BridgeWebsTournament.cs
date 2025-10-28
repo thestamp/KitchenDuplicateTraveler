@@ -9,6 +9,10 @@ namespace Traveler.Wasm.Client.Models
         public string TimeAgo { get; set; } = string.Empty;
         public bool HasResults { get; set; }
         
+        // Validation status
+        public ValidationStatus Status { get; set; } = ValidationStatus.NotChecked;
+        public string? ValidationError { get; set; }
+        
         public string GetPbnUrl()
         {
             // Format: event should be like "20251027_1" (date_session)
@@ -20,5 +24,13 @@ namespace Traveler.Wasm.Client.Models
             // URL to view the event rankings on BridgeWebs
             return $"https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?pid=display_rank&event={EventId}&club={ClubId}";
         }
+    }
+
+    public enum ValidationStatus
+    {
+        NotChecked,
+        Validating,
+        Valid,
+        Invalid
     }
 }

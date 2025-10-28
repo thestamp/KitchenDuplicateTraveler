@@ -77,6 +77,61 @@ namespace Traveler.Wasm.Client.Services
             }
         }
 
+        public async Task<bool> ValidatePbnUrlAsync(BridgeWebsTournament tournament)
+        {
+            try
+            {
+                var pbnUrl = tournament.GetPbnUrl();
+                var response = await _httpClient.GetAsync(pbnUrl);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                
+                // Basic validation - check if content looks like PBN
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    tournament.ValidationError = "Empty file";
+                    return false;
+                }
+
+                // Check for basic PBN structure
+                if (!content.Contains("[Event") && !content.Contains("[Board"))
+                {
+                    tournament.ValidationError = "Not a valid PBN file";
+                    return false;
+                }
+
+                // Try to parse it and check for boards with results
+                var games = _fileImportService.ImportFile(content);
+                if (games.Count == 0)
+                {
+                    tournament.ValidationError = "No games found in file";
+                    return false;
+                }
+
+                // Check if any boards have results
+                var boardsWithResults = games.Count(g => g.GameResults.Any());
+                if (boardsWithResults == 0)
+                {
+                    tournament.ValidationError = "No boards with results found";
+                    return false;
+                }
+
+                // Success - set a helpful message
+                tournament.ValidationError = $"Valid: {boardsWithResults} board(s) with results";
+                return true;
+            }
+            catch (HttpRequestException ex)
+            {
+                tournament.ValidationError = "File not found (404)";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                tournament.ValidationError = ex.Message.Length > 80 ? ex.Message.Substring(0, 77) + "..." : ex.Message;
+                return false;
+            }
+        }
+
         public async Task<List<GameData>> ProcessPbnContentAsync(string pbnContent)
         {
             return await Task.Run(() => ProcessPbnContent(pbnContent));

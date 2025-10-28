@@ -1,4 +1,6 @@
 @using Traveler.Wasm.Client.Models
+@using Traveler.Wasm.Client.Services
+@inject TravelerService TravelerService
 
 <MudDialog>
     <DialogContent>
@@ -26,19 +28,53 @@
                 <MudTh>Time</MudTh>
                 <MudTh>Club</MudTh>
                 <MudTh>Event</MudTh>
-                <MudTh></MudTh>
+                <MudTh Style="width: 140px;">Status</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
                 <MudTd DataLabel="Club">@context.ClubName</MudTd>
                 <MudTd DataLabel="Event">@context.EventName</MudTd>
                 <MudTd DataLabel="Actions">
-                    <MudButton Size="Size.Small"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="() => SelectTournament(context)">
-                        Load
-                    </MudButton>
+                    @if (context.Status == ValidationStatus.NotChecked)
+                    {
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="() => ValidateAndLoad(context)">
+                            Load
+                        </MudButton>
+                    }
+                    else if (context.Status == ValidationStatus.Validating)
+                    {
+                        <div class="d-flex align-center" style="gap: 4px;">
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <MudText Typo="Typo.caption">Checking...</MudText>
+                        </div>
+                    }
+                    else if (context.Status == ValidationStatus.Valid)
+                    {
+                        <MudTooltip Text="@context.ValidationError" Placement="Placement.Left">
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle"
+                                       OnClick="() => SelectTournament(context)">
+                                Load
+                            </MudButton>
+                        </MudTooltip>
+                    }
+                    else if (context.Status == ValidationStatus.Invalid)
+                    {
+                        <MudTooltip Text="@context.ValidationError" Placement="Placement.Left">
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.Error"
+                                       Disabled="true">
+                                Invalid
+                            </MudButton>
+                        </MudTooltip>
+                    }
                 </MudTd>
             </RowTemplate>
         </MudTable>
@@ -57,6 +93,21 @@
 
     private string _searchString = "";
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Start validating visible tournaments automatically
+            _ = Task.Run(async () =>
+            {
+                foreach (var tournament in Tournaments.Take(10)) // Validate first 10
+                {
+                    await ValidateTournament(tournament);
+                }
+            });
+        }
+    }
+
     private bool FilterFunc(BridgeWebsTournament tournament)
     {
         if (string.IsNullOrWhiteSpace(_searchString))
@@ -65,6 +116,30 @@
         var search = _searchString.ToLower();
         return tournament.ClubName.ToLower().Contains(search) ||
                tournament.EventName.ToLower().Contains(search);
+    }
+
+    private async Task ValidateAndLoad(BridgeWebsTournament tournament)
+    {
+        await ValidateTournament(tournament);
+        
+        if (tournament.Status == ValidationStatus.Valid)
+        {
+            SelectTournament(tournament);
+        }
+    }
+
+    private async Task ValidateTournament(BridgeWebsTournament tournament)
+    {
+        if (tournament.Status != ValidationStatus.NotChecked)
+            return;
+
+        tournament.Status = ValidationStatus.Validating;
+        await InvokeAsync(StateHasChanged);
+
+        var isValid = await TravelerService.ValidatePbnUrlAsync(tournament);
+        tournament.Status = isValid ? ValidationStatus.Valid : ValidationStatus.Invalid;
+        
+        await InvokeAsync(StateHasChanged);
     }
 
     private void SelectTournament(BridgeWebsTournament tournament)
