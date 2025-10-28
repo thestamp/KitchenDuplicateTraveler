@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveler.Wasm", "Traveler.Wasm\Traveler.Wasm.csproj", "{8CDF3DB7-B7B6-4FCF-B406-4336AC1F8BDA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveler.Wasm.Client", "Traveler.Wasm.Client\Traveler.Wasm.Client.csproj", "{7BA2EF01-2FA7-40A2-B9FD-343EC4FD60A0}"
 EndProject
 Global
@@ -39,10 +37,6 @@ Global
 		{C6379115-523D-35A6-0785-DA6FD624BE1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6379115-523D-35A6-0785-DA6FD624BE1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6379115-523D-35A6-0785-DA6FD624BE1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8CDF3DB7-B7B6-4FCF-B406-4336AC1F8BDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8CDF3DB7-B7B6-4FCF-B406-4336AC1F8BDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8CDF3DB7-B7B6-4FCF-B406-4336AC1F8BDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8CDF3DB7-B7B6-4FCF-B406-4336AC1F8BDA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7BA2EF01-2FA7-40A2-B9FD-343EC4FD60A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7BA2EF01-2FA7-40A2-B9FD-343EC4FD60A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BA2EF01-2FA7-40A2-B9FD-343EC4FD60A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
