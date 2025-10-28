@@ -2,11 +2,13 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Traveler.Wasm.Client.Services
 @using Traveler.Wasm.Client.Components
+@using Traveler.Wasm.Client.Models
 @using Traveler.Core.Models
 @inject TravelerService TravelerService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 <PageTitle>Kitchen Duplicate Traveler</PageTitle>
 
@@ -42,7 +44,18 @@
 
             <MudDivider Class="mb-4" />
 
-            <MudText Typo="Typo.h6" GutterBottom="true">Option 1: Upload PBN File</MudText>
+            <MudText Typo="Typo.h6" GutterBottom="true">Option 1: Load from BridgeWebs</MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                       OnClick="HandleLoadBridgeWebsTournaments"
+                       Disabled="@_processing">
+                Load Latest Tournaments
+            </MudButton>
+
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.h6" GutterBottom="true">Option 2: Upload PBN File</MudText>
             <MudFileUpload T="IBrowserFile" FilesChanged="HandleFileSelected" Accept=".pbn">
                 <ActivatorContent>
                     <MudButton Variant="Variant.Filled"
@@ -63,7 +76,7 @@
 
             <MudDivider Class="my-4" />
 
-            <MudText Typo="Typo.h6" GutterBottom="true">Option 2: Download from URL</MudText>
+            <MudText Typo="Typo.h6" GutterBottom="true">Option 3: Download from URL</MudText>
             <MudTextField @bind-Value="_pbnUrl"
                           Label="PBN File URL"
                           Variant="Variant.Outlined"
@@ -84,7 +97,7 @@
             {
                 <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-4" />
                 <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-2">
-                    Processing PBN file...
+                    @_processingMessage
                 </MudText>
             }
 
@@ -101,7 +114,7 @@
             <MudText Typo="Typo.body2" Class="mb-2">
                 Kitchen Duplicate Traveler helps bridge players analyze tournament results. Upload a PBN (Portable Bridge Notation) file to:
             </MudText>
-           
+
             <MudText Typo="Typo.body2" Class="mt-3">
                 <MudIcon Icon="@Icons.Material.Filled.Help" Size="Size.Small" Class="mr-1" />
                 Need help? Check out our
@@ -148,12 +161,76 @@
     private string? _selectedFileName;
     private string? _pbnUrl;
     private string? _errorMessage;
+    private string _processingMessage = "Processing...";
     private List<GameData> _boardData = new();
+
+    private async Task HandleLoadBridgeWebsTournaments()
+    {
+        _errorMessage = null;
+        _processing = true;
+        _processingMessage = "Fetching latest tournaments...";
+        StateHasChanged();
+
+        try
+        {
+            var tournaments = await TravelerService.FetchBridgeWebsTournamentsAsync();
+
+            if (tournaments.Count == 0)
+            {
+                _errorMessage = "No tournaments with results found.";
+                Snackbar.Add(_errorMessage, Severity.Warning);
+                return;
+            }
+
+            // Show tournament selection dialog
+            var parameters = new DialogParameters<TournamentSelectionDialog>
+            {
+                { x => x.Tournaments, tournaments }
+            };
+
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseButton = true,
+    
+            };
+
+            var dialog = await DialogService.ShowAsync<TournamentSelectionDialog>(
+                "Select Tournament",
+                parameters,
+                options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled && result.Data is BridgeWebsTournament selectedTournament)
+            {
+                _processingMessage = $"Loading {selectedTournament.ClubName}...";
+                StateHasChanged();
+
+                var pbnUrl = selectedTournament.GetPbnUrl();
+                _boardData = await TravelerService.ProcessPbnFromUrlAsync(pbnUrl);
+                _showResults = true;
+                Snackbar.Add($"Loaded {selectedTournament.EventName}", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading tournaments: {ex.Message}";
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+            StateHasChanged();
+        }
+    }
 
     private async Task HandleFileSelected(IBrowserFile file)
     {
         _errorMessage = null;
         _processing = true;
+        _processingMessage = "Processing PBN file...";
         _selectedFileName = file.Name;
         StateHasChanged();
 
@@ -182,6 +259,7 @@
     {
         _errorMessage = null;
         _processing = true;
+        _processingMessage = "Downloading PBN file...";
         StateHasChanged();
 
         try

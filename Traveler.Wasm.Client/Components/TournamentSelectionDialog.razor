@@ -1,0 +1,79 @@
+@using Traveler.Wasm.Client.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Select a tournament to load traveler results:
+        </MudText>
+
+        <MudTable Items="@Tournaments"
+                  Hover="true"
+                  Dense="true"
+                  FixedHeader="true"
+                  Height="400px"
+                  Filter="new Func<BridgeWebsTournament, bool>(FilterFunc)">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_searchString"
+                              Placeholder="Search clubs or events..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Time</MudTh>
+                <MudTh>Club</MudTh>
+                <MudTh>Event</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
+                <MudTd DataLabel="Club">@context.ClubName</MudTd>
+                <MudTd DataLabel="Event">@context.EventName</MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Size="Size.Small"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="() => SelectTournament(context)">
+                        Load
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public List<BridgeWebsTournament> Tournaments { get; set; } = new();
+
+    private string _searchString = "";
+
+    private bool FilterFunc(BridgeWebsTournament tournament)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var search = _searchString.ToLower();
+        return tournament.ClubName.ToLower().Contains(search) ||
+               tournament.EventName.ToLower().Contains(search);
+    }
+
+    private void SelectTournament(BridgeWebsTournament tournament)
+    {
+        MudDialog.Close(DialogResult.Ok(tournament));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

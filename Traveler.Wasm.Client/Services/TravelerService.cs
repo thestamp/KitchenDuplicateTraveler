@@ -1,6 +1,8 @@
 using Traveler.Core.Models;
 using Traveler.Core.Services;
+using Traveler.Wasm.Client.Models;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Traveler.Wasm.Client.Services
@@ -22,6 +24,57 @@ namespace Traveler.Wasm.Client.Services
             _fileImportService = fileImportService;
             _scoringService = scoringService;
             _matchPointsService = matchPointsService;
+        }
+
+        public async Task<List<BridgeWebsTournament>> FetchBridgeWebsTournamentsAsync()
+        {
+            const string apiUrl = "https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?xml=1&club=bw&pid=xml_elog&mod=EventLog&rand=0.3640787998041133";
+            
+            try
+            {
+                var response = await _httpClient.GetAsync(apiUrl);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                
+                var jsonDoc = JsonDocument.Parse(content);
+                var tournaments = new List<BridgeWebsTournament>();
+                
+                if (jsonDoc.RootElement.TryGetProperty("events", out var eventsArray))
+                {
+                    foreach (var eventElement in eventsArray.EnumerateArray())
+                    {
+                        var eventStr = eventElement.GetString();
+                        if (string.IsNullOrEmpty(eventStr))
+                            continue;
+                        
+                        var parts = eventStr.Split('|');
+                        if (parts.Length >= 7)
+                        {
+                            var hasResults = parts[0] == "1";
+                            
+                            // Only include tournaments that start with "1" (have results)
+                            if (hasResults)
+                            {
+                                tournaments.Add(new BridgeWebsTournament
+                                {
+                                    HasResults = hasResults,
+                                    ClubId = parts[2],
+                                    TimeAgo = parts[3],
+                                    EventId = parts[5],
+                                    ClubName = parts[6],
+                                    EventName = parts.Length > 7 ? parts[7] : ""
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                return tournaments;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch BridgeWebs tournaments: {ex.Message}", ex);
+            }
         }
 
         public async Task<List<GameData>> ProcessPbnContentAsync(string pbnContent)
