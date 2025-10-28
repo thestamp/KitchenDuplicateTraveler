@@ -29,12 +29,23 @@
                 <MudTh>Time</MudTh>
                 <MudTh>Club</MudTh>
                 <MudTh>Event</MudTh>
+                <MudTh Style="width: 60px;">Tables</MudTh>
                 <MudTh Style="width: 140px;">Status</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
                 <MudTd DataLabel="Club">@context.ClubName</MudTd>
                 <MudTd DataLabel="Event">@context.EventName</MudTd>
+                <MudTd DataLabel="Tables">
+                    @if (context.NumberOfTables.HasValue)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.NumberOfTables</MudChip>
+                    }
+                    else if (context.Status == ValidationStatus.Validating)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">...</MudText>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Actions">
                     @if (context.Status == ValidationStatus.NotChecked)
                     {

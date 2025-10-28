@@ -108,7 +108,7 @@ namespace Traveler.Wasm.Client.Services
                     return false;
                 }
 
-                // Check if any boards have results
+                // Check if any boards have results and calculate number of tables
                 var boardsWithResults = games.Count(g => g.GameResults.Any());
                 if (boardsWithResults == 0)
                 {
@@ -116,8 +116,14 @@ namespace Traveler.Wasm.Client.Services
                     return false;
                 }
 
-                // Success - set a helpful message
-                tournament.ValidationError = $"Valid: {boardsWithResults} board(s) with results";
+                // Calculate number of tables (assuming each result represents a table)
+                // Get the maximum number of results for any single board
+                var maxResults = games.Where(g => g.GameResults.Any())
+                                     .Max(g => g.GameResults.Count);
+                tournament.NumberOfTables = maxResults;
+
+                // Success - set a helpful message with tables info
+                tournament.ValidationError = $"Valid: {boardsWithResults} board(s), {maxResults} table(s)";
                 return true;
             }
             catch (HttpRequestException ex)
