@@ -1,6 +1,28 @@
 @using Traveler.Core.Models
+@using Traveler.Wasm.Client.Models
 
 <div class="traveler-container">
+    @if (!string.IsNullOrEmpty(EventUrl))
+    {
+        <div class="event-header no-print">
+            <MudPaper Class="pa-4 mb-4" Elevation="1">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h6" GutterBottom="false">@EventName</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@ClubName</MudText>
+                    </div>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.OpenInNew"
+                               Href="@EventUrl"
+                               Target="_blank">
+                        View on BridgeWebs
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </div>
+    }
+
     @if (Boards != null && Boards.Any())
     {
         @for (int pageIndex = 0; pageIndex < Boards.Count; pageIndex += 4)
@@ -46,11 +68,24 @@
 @code {
     [Parameter]
     public List<GameData> Boards { get; set; } = new();
+
+    [Parameter]
+    public string? EventUrl { get; set; }
+
+    [Parameter]
+    public string? EventName { get; set; }
+
+    [Parameter]
+    public string? ClubName { get; set; }
 }
 
 <style>
     .traveler-container {
         width: 100%;
+    }
+
+    .event-header {
+        margin-bottom: 1rem;
     }
 
     .traveler-page {
@@ -75,6 +110,10 @@
     }
 
     @@media print {
+        .event-header {
+            display: none;
+        }
+
         .traveler-page {
             width: 11in;
             height: 8.5in;

@@ -150,7 +150,10 @@
         </MudPaper>
 
         <div class="print-container">
-            <TravelerDisplay Boards="@_boardData" />
+            <TravelerDisplay Boards="@_boardData"
+                             EventUrl="@_selectedTournament?.GetEventUrl()"
+                             EventName="@_selectedTournament?.EventName"
+                             ClubName="@_selectedTournament?.ClubName" />
         </div>
     }
 </MudContainer>
@@ -163,6 +166,7 @@
     private string? _errorMessage;
     private string _processingMessage = "Processing...";
     private List<GameData> _boardData = new();
+    private BridgeWebsTournament? _selectedTournament;
 
     private async Task HandleLoadBridgeWebsTournaments()
     {
@@ -193,7 +197,7 @@
                 MaxWidth = MaxWidth.Medium,
                 FullWidth = true,
                 CloseButton = true,
-    
+                BackdropClick = false
             };
 
             var dialog = await DialogService.ShowAsync<TournamentSelectionDialog>(
@@ -205,13 +209,13 @@
 
             if (!result.Canceled && result.Data is BridgeWebsTournament selectedTournament)
             {
+                _selectedTournament = selectedTournament;
                 _processingMessage = $"Loading {selectedTournament.ClubName}...";
                 StateHasChanged();
 
                 var pbnUrl = selectedTournament.GetPbnUrl();
                 _boardData = await TravelerService.ProcessPbnFromUrlAsync(pbnUrl);
                 _showResults = true;
-                Snackbar.Add($"Loaded {selectedTournament.EventName}", Severity.Success);
             }
         }
         catch (Exception ex)
@@ -232,6 +236,7 @@
         _processing = true;
         _processingMessage = "Processing PBN file...";
         _selectedFileName = file.Name;
+        _selectedTournament = null; // Clear tournament info when uploading file
         StateHasChanged();
 
         try
@@ -260,6 +265,7 @@
         _errorMessage = null;
         _processing = true;
         _processingMessage = "Downloading PBN file...";
+        _selectedTournament = null; // Clear tournament info when using URL
         StateHasChanged();
 
         try
@@ -292,5 +298,6 @@
         _pbnUrl = null;
         _errorMessage = null;
         _boardData = new();
+        _selectedTournament = null;
     }
 }

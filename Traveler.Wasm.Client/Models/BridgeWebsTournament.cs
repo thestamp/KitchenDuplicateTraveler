@@ -14,5 +14,11 @@ namespace Traveler.Wasm.Client.Models
             // Format: event should be like "20251027_1" (date_session)
             return $"https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?pid=display_hands&msec=1&event={EventId}&wd=1&club={ClubId}&deal_format=pbn";
         }
+
+        public string GetEventUrl()
+        {
+            // URL to view the event rankings on BridgeWebs
+            return $"https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?pid=display_rank&event={EventId}&club={ClubId}";
+        }
     }
 }
