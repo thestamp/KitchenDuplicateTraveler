@@ -8,20 +8,145 @@
     <base href="/" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link href="css/print.css" rel="stylesheet" media="print" />
-    <script>
-        console.log('🔍 DEBUG: index.html loaded');
-        console.log('🔍 DEBUG: Base href:', document.querySelector('base').href);
-        console.log('🔍 DEBUG: Current URL:', window.location.href);
-        console.log('🔍 DEBUG: Origin:', window.location.origin);
-        console.log('🔍 DEBUG: Pathname:', window.location.pathname);
-    </script>
+    <style>
+        #loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a27 0%, #2a2833 100%);
+        }
+
+        .card-animation {
+            position: relative;
+            width: 200px;
+            height: 280px;
+            margin-bottom: 2rem;
+        }
+
+        .playing-card {
+            position: absolute;
+            width: 80px;
+            height: 112px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            animation: dealCard 2s ease-in-out infinite;
+        }
+
+            .playing-card:nth-child(1) {
+                animation-delay: 0s;
+                color: #e74c3c;
+            }
+
+            .playing-card:nth-child(2) {
+                animation-delay: 0.5s;
+                color: #000;
+            }
+
+            .playing-card:nth-child(3) {
+                animation-delay: 1s;
+                color: #e74c3c;
+            }
+
+            .playing-card:nth-child(4) {
+                animation-delay: 1.5s;
+                color: #000;
+            }
+
+        @keyframes dealCard {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+
+            25% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(60px, -40px) rotate(15deg);
+            }
+
+            75% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(120px, 0) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        .loading-message {
+            font-size: 1.5rem;
+            color: #b2b0bf;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            min-height: 3rem;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+
+        .loading-subtitle {
+            font-size: 1rem;
+            color: #92929f;
+            text-align: center;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .spinner {
+            margin-top: 1rem;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(126, 111, 255, 0.1);
+            border-top: 4px solid #7e6fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
-        <div style="position:absolute; top:30vh; width:100%; text-align:center">
-            <p style="font-size:2rem"><em>Loading...</em></p>
-            <p id="status-message" style="font-size:1rem; color: #666; margin-top: 20px;">Initializing...</p>
+        <div id="loading-container">
+            <div class="card-animation">
+                <div class="playing-card">♠</div>
+                <div class="playing-card">♣</div>
+                <div class="playing-card">♥</div>
+                <div class="playing-card">♦</div>
+            </div>
+            <div class="loading-message" id="bridge-message">Shuffling the deck...</div>
+            <div class="loading-subtitle">Kitchen Duplicate Traveler</div>
+            <div class="spinner"></div>
         </div>
     </div>
 
@@ -32,117 +157,53 @@
     </div>
 
     <script>
-        console.log('🔍 DEBUG: About to load blazor.webassembly.js');
-        console.log('🔍 DEBUG: Expected path:', document.querySelector('base').href + '_framework/blazor.webassembly.js');
+        // Bridge-themed loading messages
+        const bridgeMessages = [
+            "Shuffling the deck...",
+            "Dealing 13 cards to each player...",
+            "Counting points... looks like a yarborough!",
+            "Finessing the interface...",
+            "Calculating match points...",
+            "Setting up the dummy hand...",
+            "Arranging suits by color...",
+            "Preparing traveler sheets...",
+            "Checking for revokes...",
+            "Bid 7NT? Hold my cards...",
+            "No trump, no problem...",
+            "Setting the vulnerability...",
+            "Sorting by SAYC convention...",
+            "Installing card sense module...",
+            "Downloading bridge etiquette...",
+            "Calibrating the finesse meter...",
+            "Teaching partner to count to 13...",
+            "Remembering the bidding...",
+            "Psyching out the opponents...",
+            "Loading duplicate boards..."
+        ];
 
-        // Update status message
-        function updateStatus(message) {
-            const statusEl = document.getElementById('status-message');
-            if (statusEl) {
-                statusEl.textContent = message;
-                console.log('📊 STATUS:', message);
-            }
+        let messageIndex = 0;
+        const messageElement = document.getElementById('bridge-message');
+
+        function rotateMessage() {
+            messageElement.style.opacity = '0';
+            setTimeout(() => {
+                messageIndex = (messageIndex + 1) % bridgeMessages.length;
+                messageElement.textContent = bridgeMessages[messageIndex];
+                messageElement.style.opacity = '1';
+            }, 300);
         }
 
-        // Log when scripts start loading
+        // Rotate messages every 2.5 seconds
+        const messageInterval = setInterval(rotateMessage, 2500);
+
+        // Clean up when Blazor loads
         window.addEventListener('load', function () {
-            console.log('✅ DEBUG: Window load event fired');
-            updateStatus('Resources loaded, waiting for Blazor...');
+            clearInterval(messageInterval);
         });
-
-        // Catch any errors
-        window.addEventListener('error', function (event) {
-            console.error('❌ DEBUG: Error caught:', event.message);
-            console.error('❌ DEBUG: Error source:', event.filename);
-            console.error('❌ DEBUG: Error lineno:', event.lineno);
-            console.error('❌ DEBUG: Error colno:', event.colno);
-            console.error('❌ DEBUG: Error object:', event.error);
-            updateStatus('ERROR: ' + event.message);
-        });
-
-        // Monitor resource loading
-        window.addEventListener('load', function () {
-            performance.getEntriesByType('resource').forEach(function (resource) {
-                if (resource.name.includes('_framework') || resource.name.includes('_content')) {
-                    console.log('📦 DEBUG: Resource loaded:', resource.name, 'Status:', resource.transferSize > 0 ? 'SUCCESS' : 'CACHED/FAILED');
-                }
-            });
-        });
-
-        // Hook into Blazor startup if available
-        if (window.Blazor) {
-            console.log('🔥 DEBUG: Blazor object exists before script load');
-        }
-
-        // Monitor for Blazor object creation
-        let blazorCheckCount = 0;
-        const blazorCheck = setInterval(function () {
-            blazorCheckCount++;
-            if (window.Blazor) {
-                console.log('🔥 DEBUG: Blazor object detected after', blazorCheckCount, 'checks');
-                updateStatus('Blazor object found, starting...');
-                clearInterval(blazorCheck);
-            } else if (blazorCheckCount > 50) {
-                console.error('❌ DEBUG: Blazor object never appeared after 50 checks (5 seconds)');
-                updateStatus('ERROR: Blazor failed to initialize');
-                clearInterval(blazorCheck);
-            }
-        }, 100);
-
-        // Check for WebAssembly support
-        if (typeof WebAssembly === 'object') {
-            console.log('✅ DEBUG: WebAssembly is supported');
-            updateStatus('WebAssembly supported');
-        } else {
-            console.error('❌ DEBUG: WebAssembly is NOT supported in this browser');
-            updateStatus('ERROR: WebAssembly not supported');
-        }
     </script>
 
-    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
-    <script>
-        console.log('🔍 DEBUG: blazor.webassembly.js script tag processed');
-
-        // Manually start Blazor with error handling
-        setTimeout(function () {
-            console.log('🚀 DEBUG: Attempting to start Blazor manually');
-
-            if (window.Blazor) {
-                console.log('🔥 DEBUG: Blazor object exists, calling start()');
-                updateStatus('Starting Blazor...');
-
-                Blazor.start().then(function () {
-                    console.log('✅ DEBUG: Blazor.start() completed successfully');
-                    updateStatus('Blazor started!');
-                }).catch(function (error) {
-                    console.error('❌ DEBUG: Blazor.start() failed:', error);
-                    console.error('❌ DEBUG: Error stack:', error.stack);
-                    updateStatus('ERROR: Blazor start failed - ' + error.message);
-                });
-            } else {
-                console.error('❌ DEBUG: Blazor object not found, cannot start');
-                updateStatus('ERROR: Blazor object not found');
-
-                // Try to fetch blazor.boot.json to see if it's accessible
-                fetch('_framework/blazor.boot.json')
-                    .then(function (response) {
-                        console.log('📋 DEBUG: blazor.boot.json response:', response.status);
-                        return response.json();
-                    })
-                    .then(function (bootConfig) {
-                        console.log('📋 DEBUG: blazor.boot.json content:', bootConfig);
-                    })
-                    .catch(function (error) {
-                        console.error('❌ DEBUG: Failed to fetch blazor.boot.json:', error);
-                    });
-            }
-        }, 1000);
-    </script>
-
+    <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script>
-        console.log('🔍 DEBUG: MudBlazor.min.js script tag processed');
-    </script>
 </body>
 
 </html>

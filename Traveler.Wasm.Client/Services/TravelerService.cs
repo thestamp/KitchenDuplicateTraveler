@@ -1,6 +1,8 @@
 using Traveler.Core.Models;
 using Traveler.Core.Services;
+using Traveler.Wasm.Client.Models;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Traveler.Wasm.Client.Services
@@ -22,6 +24,118 @@ namespace Traveler.Wasm.Client.Services
             _fileImportService = fileImportService;
             _scoringService = scoringService;
             _matchPointsService = matchPointsService;
+        }
+
+        public async Task<List<BridgeWebsTournament>> FetchBridgeWebsTournamentsAsync()
+        {
+            const string apiUrl = "https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?xml=1&club=bw&pid=xml_elog&mod=EventLog&rand=0.3640787998041133";
+            
+            try
+            {
+                var response = await _httpClient.GetAsync(apiUrl);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                
+                var jsonDoc = JsonDocument.Parse(content);
+                var tournaments = new List<BridgeWebsTournament>();
+                
+                if (jsonDoc.RootElement.TryGetProperty("events", out var eventsArray))
+                {
+                    foreach (var eventElement in eventsArray.EnumerateArray())
+                    {
+                        var eventStr = eventElement.GetString();
+                        if (string.IsNullOrEmpty(eventStr))
+                            continue;
+                        
+                        var parts = eventStr.Split('|');
+                        if (parts.Length >= 7)
+                        {
+                            var hasResults = parts[0] == "1";
+                            
+                            // Only include tournaments that start with "1" (have results)
+                            if (hasResults)
+                            {
+                                tournaments.Add(new BridgeWebsTournament
+                                {
+                                    HasResults = hasResults,
+                                    ClubId = parts[2],
+                                    TimeAgo = parts[3],
+                                    EventId = parts[5],
+                                    ClubName = parts[6],
+                                    EventName = parts.Length > 7 ? parts[7] : ""
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                return tournaments;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch BridgeWebs tournaments: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> ValidatePbnUrlAsync(BridgeWebsTournament tournament)
+        {
+            try
+            {
+                var pbnUrl = tournament.GetPbnUrl();
+                var response = await _httpClient.GetAsync(pbnUrl);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                
+                // Basic validation - check if content looks like PBN
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    tournament.ValidationError = "Empty file";
+                    return false;
+                }
+
+                // Check for basic PBN structure
+                if (!content.Contains("[Event") && !content.Contains("[Board"))
+                {
+                    tournament.ValidationError = "Not a valid PBN file";
+                    return false;
+                }
+
+                // Try to parse it and check for boards with results
+                var games = _fileImportService.ImportFile(content);
+                if (games.Count == 0)
+                {
+                    tournament.ValidationError = "No games found in file";
+                    return false;
+                }
+
+                // Check if any boards have results and calculate number of tables
+                var boardsWithResults = games.Count(g => g.GameResults.Any());
+                if (boardsWithResults == 0)
+                {
+                    tournament.ValidationError = "No boards with results found";
+                    return false;
+                }
+
+                // Calculate number of tables (assuming each result represents a table)
+                // Get the maximum number of results for any single board
+                var maxResults = games.Where(g => g.GameResults.Any())
+                                     .Max(g => g.GameResults.Count);
+                tournament.NumberOfTables = maxResults;
+
+                // Success - set a helpful message with tables info
+                tournament.ValidationError = $"Valid: {boardsWithResults} board(s), {maxResults} table(s)";
+                return true;
+            }
+            catch (HttpRequestException ex)
+            {
+                tournament.ValidationError = "File not found (404)";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                tournament.ValidationError = ex.Message.Length > 80 ? ex.Message.Substring(0, 77) + "..." : ex.Message;
+                return false;
+            }
         }
 
         public async Task<List<GameData>> ProcessPbnContentAsync(string pbnContent)

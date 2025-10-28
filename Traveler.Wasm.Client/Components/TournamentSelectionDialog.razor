@@ -1,0 +1,195 @@
+@using Traveler.Wasm.Client.Models
+@using Traveler.Wasm.Client.Services
+@inject TravelerService TravelerService
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.body1">
+                Select a tournament to load traveler results:
+            </MudText>
+            <MudLink Href="https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?club=bw&pid=display_page33"
+                     Target="_blank"
+                     Typo="Typo.body2"
+                     Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="mr-1" />
+                Go to BridgeWebs
+            </MudLink>
+        </div>
+
+        <MudTable Items="@Tournaments"
+                  Hover="true"
+                  Dense="true"
+                  FixedHeader="true"
+                  Height="400px"
+                  Filter="new Func<BridgeWebsTournament, bool>(FilterFunc)"
+                  @ref="_table">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_searchString"
+                              Placeholder="Search clubs or events..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true">
+                </MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Time</MudTh>
+                <MudTh>Club</MudTh>
+                <MudTh>Event</MudTh>
+                <MudTh Style="width: 60px;">Tables</MudTh>
+                <MudTh Style="width: 140px;">Status</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
+                <MudTd DataLabel="Club">@context.ClubName</MudTd>
+                <MudTd DataLabel="Event">@context.EventName</MudTd>
+                <MudTd DataLabel="Tables">
+                    @if (context.NumberOfTables.HasValue)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info">@context.NumberOfTables</MudChip>
+                    }
+                    else if (context.Status == ValidationStatus.Validating)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">...</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    @if (context.Status == ValidationStatus.NotChecked)
+                    {
+                        <MudButton Size="Size.Small"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="() => ValidateAndLoad(context)">
+                            Load
+                        </MudButton>
+                    }
+                    else if (context.Status == ValidationStatus.Validating)
+                    {
+                        <div class="d-flex align-center" style="gap: 4px;">
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            <MudText Typo="Typo.caption">Checking...</MudText>
+                        </div>
+                    }
+                    else if (context.Status == ValidationStatus.Valid)
+                    {
+                        <MudTooltip Text="@context.ValidationError" Placement="Placement.Left">
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle"
+                                       OnClick="() => SelectTournament(context)">
+                                Load
+                            </MudButton>
+                        </MudTooltip>
+                    }
+                    else if (context.Status == ValidationStatus.Invalid)
+                    {
+                        <MudTooltip Text="@context.ValidationError" Placement="Placement.Left">
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.Error"
+                                       Disabled="true">
+                                Invalid
+                            </MudButton>
+                        </MudTooltip>
+                    }
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public List<BridgeWebsTournament> Tournaments { get; set; } = new();
+
+    private string _searchString = "";
+    private MudTable<BridgeWebsTournament>? _table;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Start validating tournaments in the background
+            _ = ValidateAllTournamentsAsync();
+        }
+    }
+
+    private async Task ValidateAllTournamentsAsync()
+    {
+        // Validate tournaments in batches to avoid overwhelming the server
+        var tournaments = Tournaments.ToList();
+        var batchSize = 5;
+
+        for (int i = 0; i < tournaments.Count; i += batchSize)
+        {
+            var batch = tournaments.Skip(i).Take(batchSize);
+            var tasks = batch.Select(t => ValidateTournamentAsync(t));
+            await Task.WhenAll(tasks);
+
+            // Update UI after each batch
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+
+    private bool FilterFunc(BridgeWebsTournament tournament)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var search = _searchString.ToLower();
+        return tournament.ClubName.ToLower().Contains(search) ||
+               tournament.EventName.ToLower().Contains(search);
+    }
+
+    private async Task ValidateAndLoad(BridgeWebsTournament tournament)
+    {
+        await ValidateTournamentAsync(tournament);
+
+        if (tournament.Status == ValidationStatus.Valid)
+        {
+            SelectTournament(tournament);
+        }
+    }
+
+    private async Task ValidateTournamentAsync(BridgeWebsTournament tournament)
+    {
+        if (tournament.Status != ValidationStatus.NotChecked)
+            return;
+
+        tournament.Status = ValidationStatus.Validating;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var isValid = await TravelerService.ValidatePbnUrlAsync(tournament);
+            tournament.Status = isValid ? ValidationStatus.Valid : ValidationStatus.Invalid;
+        }
+        catch (Exception ex)
+        {
+            tournament.Status = ValidationStatus.Invalid;
+            tournament.ValidationError = $"Error: {ex.Message}";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void SelectTournament(BridgeWebsTournament tournament)
+    {
+        MudDialog.Close(DialogResult.Ok(tournament));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
