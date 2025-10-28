@@ -13,7 +13,8 @@
                   Dense="true"
                   FixedHeader="true"
                   Height="400px"
-                  Filter="new Func<BridgeWebsTournament, bool>(FilterFunc)">
+                  Filter="new Func<BridgeWebsTournament, bool>(FilterFunc)"
+                  @ref="_table">
             <ToolBarContent>
                 <MudTextField @bind-Value="_searchString"
                               Placeholder="Search clubs or events..."
@@ -92,19 +93,31 @@
     public List<BridgeWebsTournament> Tournaments { get; set; } = new();
 
     private string _searchString = "";
+    private MudTable<BridgeWebsTournament>? _table;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Start validating visible tournaments automatically
-            _ = Task.Run(async () =>
-            {
-                foreach (var tournament in Tournaments.Take(10)) // Validate first 10
-                {
-                    await ValidateTournament(tournament);
-                }
-            });
+            // Start validating tournaments in the background
+            _ = ValidateAllTournamentsAsync();
+        }
+    }
+
+    private async Task ValidateAllTournamentsAsync()
+    {
+        // Validate tournaments in batches to avoid overwhelming the server
+        var tournaments = Tournaments.ToList();
+        var batchSize = 5;
+
+        for (int i = 0; i < tournaments.Count; i += batchSize)
+        {
+            var batch = tournaments.Skip(i).Take(batchSize);
+            var tasks = batch.Select(t => ValidateTournamentAsync(t));
+            await Task.WhenAll(tasks);
+
+            // Update UI after each batch
+            await InvokeAsync(() => StateHasChanged());
         }
     }
 
@@ -120,15 +133,15 @@
 
     private async Task ValidateAndLoad(BridgeWebsTournament tournament)
     {
-        await ValidateTournament(tournament);
-        
+        await ValidateTournamentAsync(tournament);
+
         if (tournament.Status == ValidationStatus.Valid)
         {
             SelectTournament(tournament);
         }
     }
 
-    private async Task ValidateTournament(BridgeWebsTournament tournament)
+    private async Task ValidateTournamentAsync(BridgeWebsTournament tournament)
     {
         if (tournament.Status != ValidationStatus.NotChecked)
             return;
@@ -136,9 +149,17 @@
         tournament.Status = ValidationStatus.Validating;
         await InvokeAsync(StateHasChanged);
 
-        var isValid = await TravelerService.ValidatePbnUrlAsync(tournament);
-        tournament.Status = isValid ? ValidationStatus.Valid : ValidationStatus.Invalid;
-        
+        try
+        {
+            var isValid = await TravelerService.ValidatePbnUrlAsync(tournament);
+            tournament.Status = isValid ? ValidationStatus.Valid : ValidationStatus.Invalid;
+        }
+        catch (Exception ex)
+        {
+            tournament.Status = ValidationStatus.Invalid;
+            tournament.ValidationError = $"Error: {ex.Message}";
+        }
+
         await InvokeAsync(StateHasChanged);
     }
 
