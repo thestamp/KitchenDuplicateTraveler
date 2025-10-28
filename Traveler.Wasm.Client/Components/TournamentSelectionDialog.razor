@@ -4,9 +4,18 @@
 
 <MudDialog>
     <DialogContent>
-        <MudText Typo="Typo.body1" Class="mb-4">
-            Select a tournament to load traveler results:
-        </MudText>
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.body1">
+                Select a tournament to load traveler results:
+            </MudText>
+            <MudLink Href="https://www.bridgewebs.com/cgi-bin/bwor/bw.cgi?club=bw&pid=display_page33"
+                     Target="_blank"
+                     Typo="Typo.body2"
+                     Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="mr-1" />
+                Go to BridgeWebs
+            </MudLink>
+        </div>
 
         <MudTable Items="@Tournaments"
                   Hover="true"
