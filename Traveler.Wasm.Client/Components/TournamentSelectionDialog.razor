@@ -17,12 +17,13 @@
             </MudLink>
         </div>
 
-        <MudTable Items="@Tournaments"
+        <MudTable Items="@SortedAndGroupedTournaments"
                   Hover="true"
                   Dense="true"
                   FixedHeader="true"
                   Height="400px"
                   Filter="new Func<BridgeWebsTournament, bool>(FilterFunc)"
+                  GroupBy="@_groupDefinition"
                   @ref="_table">
             <ToolBarContent>
                 <MudTextField @bind-Value="_searchString"
@@ -42,6 +43,32 @@
                 <MudTh Style="width: 60px;">Tables</MudTh>
                 <MudTh Style="width: 140px;">Status</MudTh>
             </HeaderContent>
+            <GroupHeaderTemplate>
+                <MudTh Class="mud-table-cell-custom-group" colspan="6">
+                    <div class="d-flex align-center gap-2">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight: bold;">
+                            @if (context.Key != null)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Small" Class="mr-2" />
+                                <text>@context.Key Tables (@context.Items.Count() tournament@(context.Items.Count() != 1 ? "s" : ""))</text>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.HelpOutline" Size="Size.Small" Class="mr-2" />
+                                <text>Unknown Tables (@context.Items.Count() tournament@(context.Items.Count() != 1 ? "s" : ""))</text>
+                            }
+                        </MudText>
+                        @if (IsRecommendedTableCount(context.Key))
+                        {
+                            <MudChip T="string" 
+                                     Size="Size.Small" 
+                                     Color="Color.Success" 
+                                     Icon="@Icons.Material.Filled.Star"
+                                     Text="Recommended" />
+                        }
+                    </div>
+                </MudTh>
+            </GroupHeaderTemplate>
             <RowTemplate>
                 <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
                 <MudTd DataLabel="Club">@context.ClubName</MudTd>
@@ -125,6 +152,29 @@
 
     private string _searchString = "";
     private MudTable<BridgeWebsTournament>? _table;
+
+    private TableGroupDefinition<BridgeWebsTournament> _groupDefinition = new()
+    {
+        GroupName = "Tables",
+        Indentation = false,
+        Expandable = true,
+        IsInitiallyExpanded = true,
+        Selector = (t) => t.NumberOfTables
+    };
+
+    private IEnumerable<BridgeWebsTournament> SortedAndGroupedTournaments =>
+        Tournaments
+            .OrderByDescending(t => t.NumberOfTables ?? -1)
+            .ThenByDescending(t => t.NumberOfBoards ?? -1);
+
+    private bool IsRecommendedTableCount(object? key)
+    {
+        if (key is int tableCount)
+        {
+            return tableCount >= 8 && tableCount <= 12;
+        }
+        return false;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
