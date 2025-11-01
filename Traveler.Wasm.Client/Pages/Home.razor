@@ -12,9 +12,9 @@
 
 <PageTitle>Kitchen Duplicate Traveler</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
-    @if (!_showResults)
-    {
+@if (!_showResults)
+{
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
         <MudPaper Class="pa-6" Elevation="3">
             <div class="d-flex align-center mb-2">
                 <MudText Typo="Typo.h3" GutterBottom="false">Kitchen Duplicate Traveler</MudText>
@@ -134,46 +134,71 @@
                 </MudLink>.
             </MudText>
         </MudPaper>
-    }
-    else
-    {
-        <MudPaper Class="pa-4 mb-4 no-print" Elevation="2">
-            <div class="d-flex justify-space-between align-center">
-                <div class="d-flex align-center">
-                    <MudText Typo="Typo.h5">Traveler Results (@_boardData.Count boards)</MudText>
-                </div>
-                <div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.Print"
-                               OnClick="PrintResults"
-                               Class="mr-2">
-                        Print
-                    </MudButton>
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Secondary"
-                               StartIcon="@Icons.Material.Filled.ArrowBack"
-                               OnClick="GoBack">
-                        Upload Another File
-                    </MudButton>
-                </div>
-            </div>
-        </MudPaper>
-
-        <div class="print-container">
-            <TravelerDisplay Boards="@_boardData"
-                             EventUrl="@_selectedTournament?.GetEventUrl()"
-                             EventName="@_selectedTournament?.EventName"
-                             ClubName="@_selectedTournament?.ClubName" />
+    </MudContainer>
+}
+else
+{
+    <div class="results-container">
+        <div class="no-print button-bar">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Print"
+                       OnClick="PrintResults"
+                       Class="mr-2">
+                Print
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="GoBack">
+                Upload Another File
+            </MudButton>
         </div>
+
+        <TravelerDisplay Boards="@_boardData"
+                         EventUrl="@_selectedTournament?.GetEventUrl()"
+                         EventName="@_selectedTournament?.EventName"
+                         ClubName="@_selectedTournament?.ClubName"
+                         PbnUrl="@_pbnFileUrl" />
+    </div>
+}
+
+<style>
+    .results-container {
+        width: 100%;
+        padding: 0;
+        margin: 0;
     }
-</MudContainer>
+
+    .button-bar {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    @@media print {
+        .results-container {
+            padding: 0;
+            margin: 0;
+        }
+
+        .no-print,
+        .button-bar {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+    }
+</style>
 
 @code {
     private bool _processing = false;
     private bool _showResults = false;
     private string? _selectedFileName;
     private string? _pbnUrl;
+    private string? _pbnFileUrl; // URL to the PBN file for download
     private string? _errorMessage;
     private string? _troubleshootUrl;
     private string _processingMessage = "Processing...";
@@ -233,6 +258,7 @@
                 StateHasChanged();
 
                 var pbnUrl = selectedTournament.GetPbnUrl();
+                _pbnFileUrl = pbnUrl; // Store the PBN URL for download
                 _boardData = await TravelerService.ProcessPbnFromUrlAsync(pbnUrl);
                 _showResults = true;
             }
@@ -264,6 +290,7 @@
         _processingMessage = "Processing PBN file...";
         _selectedFileName = file.Name;
         _selectedTournament = null; // Clear tournament info when uploading file
+        _pbnFileUrl = null; // Can't download uploaded files
         StateHasChanged();
 
         try
@@ -298,6 +325,7 @@
 
         try
         {
+            _pbnFileUrl = _pbnUrl; // Store the URL for download
             _boardData = await TravelerService.ProcessPbnFromUrlAsync(_pbnUrl!);
             _showResults = true;
         }
@@ -325,6 +353,7 @@
         _showResults = false;
         _selectedFileName = null;
         _pbnUrl = null;
+        _pbnFileUrl = null;
         _errorMessage = null;
         _troubleshootUrl = null;
         _boardData = new();
