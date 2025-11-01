@@ -5,7 +5,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="1" Class="no-print">
         <MudText Typo="Typo.h5" Class="ml-3">Kitchen Duplicate Traveler</MudText>
         <MudSpacer />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub"
@@ -15,7 +15,7 @@
                        Title="View on GitHub" />
         <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
     </MudAppBar>
-    <MudMainContent Class="pt-16 pa-4">
+    <MudMainContent Class="content-wrapper">
         @Body
     </MudMainContent>
     
@@ -26,6 +26,22 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+<style>
+    .content-wrapper {
+        padding-top: 64px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    @@media print {
+        .content-wrapper {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    }
+</style>
 
 @code {
     private bool _isDarkMode = true;
