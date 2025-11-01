@@ -47,76 +47,66 @@
     @if (GameData.ScoreDetails.Any())
     {
         <div class="scoring-row">
-            <!-- Top labels with table count -->
+            <!-- Top labels: N/S Match Points -->
             <div class="mp-labels-top">
                 @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                 {
                     <div class="mp-label-container">
-                        <div class="mp-label-ns">@detail.MatchPoints.ToString("F1")</div>
+                        <div class="mp-label-ns">@detail.MatchPoints.ToString("0.#")</div>
                     </div>
                 }
             </div>
 
+            <!-- Score boxes with line -->
             <div class="score-line-container">
                 <div class="score-line"></div>
                 <div class="score-boxes">
                     @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                     {
-      
-                        var contractResult = GetContractResult(detail);
-
                         <div class="score-box @GetScoreBoxClass(detail)">
                             @if (detail.IsStoredScore && !string.IsNullOrEmpty(detail.Contract))
                             {
+                                var contractDisplay = FormatContractDisplay(detail);
+                                
                                 @if (detail.Score > 0)
                                 {
-                                    <!-- N/S won points - score at top -->
-                                    <div class="score-display score-top">
-                                        @detail.Score
+                                    <!-- N/S won points - both at TOP -->
+                                    <div class="score-group score-group-top">
+                                        <div class="score-display">
+                                            @detail.Score
+                                        </div>
+                                        <div class="contract-inline">
+                                            @((MarkupString)contractDisplay)
+                                        </div>
                                     </div>
-                                    <div class="contract-center">
-                                        <div class="contract-text">@detail.Contract</div>
-                                        <div class="contract-declarer">@detail.Declarer</div>
-                                        <div class="contract-result @contractResult.CssClass">@contractResult.Symbol</div>
-                                    </div>
-                                    <div class="score-display score-bottom score-empty"></div>
                                 }
                                 else
                                 {
-                                    <!-- E/W won points - score at bottom (no negative) -->
-                                    <div class="score-display score-top score-empty"></div>
-                                    <div class="contract-center">
-                                        <div class="contract-text">@detail.Contract</div>
-                                        <div class="contract-declarer">@detail.Declarer</div>
-                                        <div class="contract-result @contractResult.CssClass">@contractResult.Symbol</div>
-                                    </div>
-                                    <div class="score-display score-bottom">
-                                        @Math.Abs(detail.Score)
+                                    <!-- E/W won points - both at BOTTOM -->
+                                    <div class="score-group score-group-bottom">
+                                        <div class="contract-inline">
+                                            @((MarkupString)contractDisplay)
+                                        </div>
+                                        <div class="score-display">
+                                            @Math.Abs(detail.Score)
+                                        </div>
                                     </div>
                                 }
-                            }
-                            else
-                            {
-                                <div class="score-display score-top score-empty"></div>
-                                <div class="contract-center">
-                                    <div class="contract-text"></div>
-                                </div>
-                                <div class="score-display score-bottom score-empty"></div>
                             }
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- Bottom labels with table count -->
+            <!-- Bottom labels: E/W Match Points -->
             <div class="mp-labels-bottom">
                 @foreach (var detail in GameData.ScoreDetails.OrderBy(d => d.EastWestMatchPoints))
                 {
                     <div class="mp-label-container">
-                        <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("F1")</div>
+                        <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("0.#")</div>
                         @if (detail.IsStoredScore && detail.TablesWithScore > 1)
                         {
-                            <div class="tables-count">@detail.TablesWithScore tables</div>
+                            <div class="tables-count">(@detail.TablesWithScore)</div>
                         }
                     </div>
                 }
@@ -191,13 +181,71 @@
         return result;
     }
 
+    private string FormatContractDisplay(GameData.ScoreDetail detail)
+    {
+        if (string.IsNullOrEmpty(detail.Contract))
+            return "";
+
+        var contract = detail.Contract;
+        var level = contract.Substring(0, 1);
+        var suit = contract.Length > 1 ? contract[1].ToString().ToUpper() : "";
+        var doubled = "";
+        
+        // Check for doubled/redoubled (make lowercase)
+        if (contract.Contains("XX", StringComparison.OrdinalIgnoreCase))
+            doubled = "xx";
+        else if (contract.Contains("X", StringComparison.OrdinalIgnoreCase))
+            doubled = "x";
+
+        // Convert suit to symbol with larger font
+        var suitSymbol = suit switch
+        {
+            "C" => "<span class=\"suit-symbol-contract clubs\">♣</span>",
+            "D" => "<span class=\"suit-symbol-contract diamonds\">♦</span>",
+            "H" => "<span class=\"suit-symbol-contract hearts\">♥</span>",
+            "S" => "<span class=\"suit-symbol-contract spades\">♠</span>",
+            "N" => "N", // Notrump as "N"
+            _ => suit
+        };
+
+        var formattedContract = $"{level}{suitSymbol}{doubled}";
+        var declarer = detail.Declarer;
+        
+        // Calculate result display
+        var resultDisplay = GetResultDisplay(detail);
+        
+        return $"<span class=\"contract-compact\">{formattedContract} {declarer} {resultDisplay}</span>";
+    }
+
+    private string GetResultDisplay(GameData.ScoreDetail detail)
+    {
+        var isNS = IsNorthSouth(detail.Declarer);
+        var scoreMadeContract = (isNS && detail.Score > 0) || (!isNS && detail.Score < 0);
+
+        // Parse the contract to get level
+        var contractLevel = int.Parse(detail.Contract.Substring(0, 1));
+        var tricksNeeded = 6 + contractLevel;
+        var tricksDifference = detail.TricksMade - tricksNeeded;
+
+        if (tricksDifference == 0)
+        {
+            return "<span class=\"result-made\">✓</span>";
+        }
+        else if (tricksDifference > 0)
+        {
+            return $"<span class=\"result-made\">+{tricksDifference}</span>";
+        }
+        else
+        {
+            return $"<span class=\"result-defeated\">{tricksDifference}</span>";
+        }
+    }
+
     private ContractResultDisplay GetContractResult(GameData.ScoreDetail detail)
     {
         if (!detail.IsStoredScore)
             return new ContractResultDisplay { Symbol = "", CssClass = "" };
 
-        // Determine if contract was made or defeated based on score
-        // In bridge, positive scores for declarer = made, negative = defeated
         var isNS = IsNorthSouth(detail.Declarer);
         var scoreMadeContract = (isNS && detail.Score > 0) || (!isNS && detail.Score < 0);
 
@@ -366,18 +414,18 @@
         gap: 1px;
     }
 
-    .tables-count {
-        font-size: 0.6rem;
-        font-weight: 700;
-        color: #666666;
-        text-align: center;
-    }
-
     .mp-label-ns,
     .mp-label-ew {
         font-size: 1rem;
         font-weight: 900;
         color: #000000;
+        text-align: center;
+    }
+
+    .tables-count {
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: #666666;
         text-align: center;
     }
 
@@ -417,9 +465,9 @@
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        align-items: stretch;
-        padding: 3px;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 6px 3px;
         position: relative;
         box-shadow: 2px 2px 0px #000000;
     }
@@ -439,66 +487,78 @@
         box-shadow: none;
     }
 
+    /* Score group - groups score and contract together */
+    .score-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        align-items: center;
+        width: 100%;
+    }
+
+    .score-group-top {
+        /* Stays at top naturally */
+    }
+
+    .score-group-bottom {
+        /* Push to bottom */
+        margin-top: auto;
+    }
+
     .score-display {
         font-size: 1.2rem;
         font-weight: 900;
         color: #000000;
         text-align: center;
         line-height: 1;
-        padding: 2px;
-        min-height: 16px;
+        width: 100%;
     }
 
-    .score-top {
-        order: 1;
-    }
-
-    .score-bottom {
-        order: 3;
-    }
-
-    .score-empty {
-        visibility: hidden;
-    }
-
-    .contract-center {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        gap: 1px;
-        order: 2;
-    }
-
-    .contract-text {
+    .contract-inline {
         font-size: 0.75rem;
-        font-weight: 900;
+        font-weight: 700;
         color: #000000;
         text-align: center;
+        line-height: 1.2;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    .contract-compact {
+        display: inline;
+    }
+
+    /* Larger suit symbols in contracts */
+    .suit-symbol-contract {
+        font-size: 1.1em;
+        font-weight: 900;
         line-height: 1;
     }
 
-    .contract-declarer {
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #666666;
-        text-align: center;
+    .suit-symbol-contract.spades {
+        color: #000000;
     }
 
-    .contract-result {
-        font-size: 1rem;
-        font-weight: 900;
-        text-align: center;
-        margin-top: 1px;
+    .suit-symbol-contract.hearts {
+        color: #d32f2f;
     }
 
-    .result-made {
+    .suit-symbol-contract.diamonds {
+        color: #d32f2f;
+    }
+
+    .suit-symbol-contract.clubs {
+        color: #000000;
+    }
+
+    .contract-compact .result-made {
         color: #2e7d32;
+        font-weight: 900;
     }
 
-    .result-defeated {
+    .contract-compact .result-defeated {
         color: #c62828;
+        font-weight: 900;
     }
 
     @@media print {
@@ -560,21 +620,26 @@
         }
 
         .score-box {
-            min-height: 75px;
+            min-height: 80px;
             border-width: 1.5px;
             min-width: 38px;
+            padding: 5px 2px;
         }
 
-        .contract-text {
-            font-size: 0.65rem;
-        }
-
-        .contract-result {
-            font-size: 0.9rem;
+        .score-group {
+            gap: 1px;
         }
 
         .score-display {
             font-size: 1.1rem;
+        }
+
+        .contract-inline {
+            font-size: 0.65rem;
+        }
+
+        .suit-symbol-contract {
+            font-size: 1.1em;
         }
 
         .mp-label-ns,
