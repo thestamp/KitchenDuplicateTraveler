@@ -13,6 +13,7 @@ namespace Traveler.Wasm.Client.Models
         public ValidationStatus Status { get; set; } = ValidationStatus.NotChecked;
         public string? ValidationError { get; set; }
         public int? NumberOfTables { get; set; }
+        public int? NumberOfBoards { get; set; }
         
         public string GetPbnUrl()
         {

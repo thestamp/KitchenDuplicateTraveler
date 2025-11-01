@@ -121,6 +121,7 @@ namespace Traveler.Wasm.Client.Services
                 var maxResults = games.Where(g => g.GameResults.Any())
                                      .Max(g => g.GameResults.Count);
                 tournament.NumberOfTables = maxResults;
+                tournament.NumberOfBoards = boardsWithResults;
 
                 // Success - set a helpful message with tables info
                 tournament.ValidationError = $"Valid: {boardsWithResults} board(s), {maxResults} table(s)";

@@ -38,6 +38,7 @@
                 <MudTh>Time</MudTh>
                 <MudTh>Club</MudTh>
                 <MudTh>Event</MudTh>
+                <MudTh Style="width: 60px;">Boards</MudTh>
                 <MudTh Style="width: 60px;">Tables</MudTh>
                 <MudTh Style="width: 140px;">Status</MudTh>
             </HeaderContent>
@@ -45,6 +46,16 @@
                 <MudTd DataLabel="Time">@context.TimeAgo</MudTd>
                 <MudTd DataLabel="Club">@context.ClubName</MudTd>
                 <MudTd DataLabel="Event">@context.EventName</MudTd>
+                <MudTd DataLabel="Boards">
+                    @if (context.NumberOfBoards.HasValue)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success">@context.NumberOfBoards</MudChip>
+                    }
+                    else if (context.Status == ValidationStatus.Validating)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">...</MudText>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Tables">
                     @if (context.NumberOfTables.HasValue)
                     {
