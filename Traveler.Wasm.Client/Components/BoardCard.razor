@@ -1,6 +1,4 @@
-﻿<article class="hljs-content">
-
-@using Traveler.Core.Models
+﻿@using Traveler.Core.Models
 
 <MudPaper Class="board-card" Elevation="2">
     <!-- TOP ROW: Board Info - Inline Format -->
@@ -64,7 +62,7 @@
                 <div class="score-boxes">
                     @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                     {
-                        var isNS = IsNorthSouth(detail.Declarer);
+      
                         var contractResult = GetContractResult(detail);
 
                         <div class="score-box @GetScoreBoxClass(detail)">
@@ -593,4 +591,3 @@
         }
     }
 </style>
-</article>
