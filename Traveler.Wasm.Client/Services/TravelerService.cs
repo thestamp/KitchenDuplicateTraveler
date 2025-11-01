@@ -184,6 +184,9 @@ namespace Traveler.Wasm.Client.Services
 
                     var nsScores = scoredResults.Select(sr => sr.NorthScore).ToList();
 
+                    // Group scores to count how many tables achieved each score
+                    var scoreGroups = nsScores.GroupBy(s => s).ToDictionary(g => g.Key, g => g.Count());
+
                     // Get all ranking options (includes actual scores and theoretical positions)
                     var matchPointsOptions = _matchPointsService.GetAllRankingOptions(nsScores);
 
@@ -204,6 +207,9 @@ namespace Traveler.Wasm.Client.Services
                         if (option.IsStoredScore && int.TryParse(option.ScoreDisplay, out int score))
                         {
                             detail.Score = score;
+                            
+                            // Set the number of tables with this score
+                            detail.TablesWithScore = scoreGroups.ContainsKey(score) ? scoreGroups[score] : 1;
 
                             // Find the first game result with this score
                             var matchingResult = scoredResults.FirstOrDefault(sr => sr.NorthScore == score);
@@ -221,6 +227,7 @@ namespace Traveler.Wasm.Client.Services
                             detail.Contract = "";
                             detail.Declarer = "";
                             detail.TricksMade = 0;
+                            detail.TablesWithScore = 0; // Theoretical positions don't have actual tables
                         }
 
                         return detail;

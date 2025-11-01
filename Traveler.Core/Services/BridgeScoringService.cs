@@ -80,22 +80,25 @@ namespace Traveler.Core.Services
                     overtrickValue = 30;
                     break;
                 case 'N': // No Trump
-                    baseScore = 40 + (level - 1) * 30;
+                    baseScore = 40 + ((level - 1) * 30);
                     overtrickValue = 30;
                     break;
                 default:
                     return 0;
             }
 
+            // Determine game bonus BEFORE applying doubled/redoubled multiplier
+            int unmultipliedBaseScore = baseScore;
+            
             // Apply doubled/redoubled multiplier to base score
             if (redoubled)
                 baseScore *= 4;
             else if (doubled)
                 baseScore *= 2;
 
-            // Add game/slam bonus
+            // Add game/slam bonus (based on UNMULTIPLIED base score)
             int bonus = 0;
-            if (baseScore >= 100)
+            if (unmultipliedBaseScore >= 100)
             {
                 // Game bonus
                 bonus = vulnerable ? 500 : 300;
