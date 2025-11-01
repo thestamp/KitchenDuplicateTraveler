@@ -158,7 +158,8 @@ else
         <TravelerDisplay Boards="@_boardData"
                          EventUrl="@_selectedTournament?.GetEventUrl()"
                          EventName="@_selectedTournament?.EventName"
-                         ClubName="@_selectedTournament?.ClubName" />
+                         ClubName="@_selectedTournament?.ClubName"
+                         PbnUrl="@_pbnFileUrl" />
     </div>
 }
 
@@ -197,6 +198,7 @@ else
     private bool _showResults = false;
     private string? _selectedFileName;
     private string? _pbnUrl;
+    private string? _pbnFileUrl; // URL to the PBN file for download
     private string? _errorMessage;
     private string? _troubleshootUrl;
     private string _processingMessage = "Processing...";
@@ -256,6 +258,7 @@ else
                 StateHasChanged();
 
                 var pbnUrl = selectedTournament.GetPbnUrl();
+                _pbnFileUrl = pbnUrl; // Store the PBN URL for download
                 _boardData = await TravelerService.ProcessPbnFromUrlAsync(pbnUrl);
                 _showResults = true;
             }
@@ -287,6 +290,7 @@ else
         _processingMessage = "Processing PBN file...";
         _selectedFileName = file.Name;
         _selectedTournament = null; // Clear tournament info when uploading file
+        _pbnFileUrl = null; // Can't download uploaded files
         StateHasChanged();
 
         try
@@ -321,6 +325,7 @@ else
 
         try
         {
+            _pbnFileUrl = _pbnUrl; // Store the URL for download
             _boardData = await TravelerService.ProcessPbnFromUrlAsync(_pbnUrl!);
             _showResults = true;
         }
@@ -348,6 +353,7 @@ else
         _showResults = false;
         _selectedFileName = null;
         _pbnUrl = null;
+        _pbnFileUrl = null;
         _errorMessage = null;
         _troubleshootUrl = null;
         _boardData = new();
