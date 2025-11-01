@@ -1,175 +1,467 @@
 ﻿@using Traveler.Core.Models
 
 <MudPaper Class="board-card" Elevation="2">
-    <div class="board-header">
-        <MudText Typo="Typo.body2" Class="header-line">╔═══════════════════════════════════════════════════╗</MudText>
-        <MudText Typo="Typo.body2" Class="header-line">║ Board @GameData.GameModel.BoardNumber.ToString("D2")  Dealer: @FormatPlayer(GameData.GameModel.Dealer)  Vulnerable: @FormatVulnerable(GameData.GameModel.Vulnerable)              ║</MudText>
-        <MudText Typo="Typo.body2" Class="header-line">╚═══════════════════════════════════════════════════╝</MudText>
+    <!-- TOP ROW: Board Info -->
+    <div class="info-row">
+        <div class="info-item">
+            <div class="info-label">BOARD</div>
+            <div class="info-value">@GameData.GameModel.BoardNumber.ToString("D2")</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">DEALER</div>
+            <div class="info-value">@GameData.GameModel.Dealer</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">VULNERABLE</div>
+            <div class="info-value">@GameData.GameModel.Vulnerable</div>
+        </div>
     </div>
 
-    <div class="board-content">
-        <MudText Typo="Typo.caption" Class="section-title">HANDS:</MudText>
-        <MudDivider />
-        <div class="hands-section">
-            @foreach (var player in new[] { GameModel.Player.North, GameModel.Player.East, GameModel.Player.South, GameModel.Player.West })
+    <!-- MIDDLE ROW: Hands (Visual Bridge Layout) -->
+    <div class="hands-row">
+        <div class="hands-bridge-layout">
+            <!-- North (Top) -->
+            @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.North))
             {
-                if (GameData.GameModel.PlayerHands.ContainsKey(player))
-                {
-                    <div class="hand-line">@FormatPlayerName(player): @FormatHand(GameData.GameModel.PlayerHands[player])</div>
-                }
-            }
-        </div>
-
-        @if (GameData.ScoreDetails.Any())
-        {
-            <MudText Typo="Typo.caption" Class="section-title mt-2">MATCH POINTS AWARDED:</MudText>
-            <MudDivider />
-            <div class="scores-section">
-                <div class="score-header">
-                    <span class="col-contract">Contract</span>
-                    <span class="col-tricks">Tricks</span>
-                    <span class="col-score">Score</span>
-                    <span class="col-ns">N/S</span>
-                    <span class="col-ew">E/W</span>
-                    <span class="col-ranking">Ranking</span>
+                <div class="hand hand-north">
+                    <div class="player-label">NORTH</div>
+                    <div class="suits-vertical">
+                        @foreach (var suit in FormatHandBySuit(GameData.GameModel.PlayerHands[GameModel.Player.North]))
+                        {
+                            <div class="suit-line">
+                                <span class="suit-symbol @suit.SuitClass">@suit.Symbol</span>
+                                <span class="suit-cards">@suit.Cards</span>
+                            </div>
+                        }
+                    </div>
                 </div>
-                @foreach (var detail in GameData.ScoreDetails)
+            }
+
+            <!-- West (Left) and East (Right) -->
+            <div class="hands-horizontal">
+                @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.West))
                 {
-                    <div class="score-row">
-                        <span class="col-contract">@FormatContract(detail)</span>
-                        <span class="col-tricks">@FormatTricks(detail)</span>
-                        <span class="col-score">@FormatScore(detail)</span>
-                        <span class="col-ns">@detail.MatchPoints.ToString("F1")</span>
-                        <span class="col-ew">@detail.EastWestMatchPoints.ToString("F1")</span>
-                        <span class="col-ranking">@detail.Ranking</span>
+                    <div class="hand hand-west">
+                        <div class="player-label">WEST</div>
+                        <div class="suits-vertical">
+                            @foreach (var suit in FormatHandBySuit(GameData.GameModel.PlayerHands[GameModel.Player.West]))
+                            {
+                                <div class="suit-line">
+                                    <span class="suit-symbol @suit.SuitClass">@suit.Symbol</span>
+                                    <span class="suit-cards">@suit.Cards</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="center-space"></div>
+
+                @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.East))
+                {
+                    <div class="hand hand-east">
+                        <div class="player-label">EAST</div>
+                        <div class="suits-vertical">
+                            @foreach (var suit in FormatHandBySuit(GameData.GameModel.PlayerHands[GameModel.Player.East]))
+                            {
+                                <div class="suit-line">
+                                    <span class="suit-symbol @suit.SuitClass">@suit.Symbol</span>
+                                    <span class="suit-cards">@suit.Cards</span>
+                                </div>
+                            }
+                        </div>
                     </div>
                 }
             </div>
-        }
+
+            <!-- South (Bottom) -->
+            @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.South))
+            {
+                <div class="hand hand-south">
+                    <div class="player-label">SOUTH</div>
+                    <div class="suits-vertical">
+                        @foreach (var suit in FormatHandBySuit(GameData.GameModel.PlayerHands[GameModel.Player.South]))
+                        {
+                            <div class="suit-line">
+                                <span class="suit-symbol @suit.SuitClass">@suit.Symbol</span>
+                                <span class="suit-cards">@suit.Cards</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
     </div>
+
+    <!-- BOTTOM ROW: Scoring -->
+    @if (GameData.ScoreDetails.Any())
+    {
+        <div class="scoring-row">
+            <div class="mp-labels-top">
+                @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
+                {
+                    <div class="mp-label-ns">@detail.MatchPoints.ToString("F1")</div>
+                }
+            </div>
+            
+            <div class="score-line-container">
+                <div class="score-line"></div>
+                <div class="score-boxes">
+                    @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
+                    {
+                        <div class="score-box @GetScoreBoxClass(detail)">
+                            @if (detail.IsStoredScore && !string.IsNullOrEmpty(detail.Contract))
+                            {
+                                var isNS = IsNorthSouth(detail.Declarer);
+                                <div class="contract-info @(isNS ? "contract-ns" : "contract-ew")">
+                                    @detail.Contract @detail.Declarer
+                                </div>
+                            }
+                            <div class="score-value">@FormatScoreValue(detail)</div>
+                            @if (detail.IsStoredScore)
+                            {
+                                <div class="tricks-info">@detail.TricksMade</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mp-labels-bottom">
+                @foreach (var detail in GameData.ScoreDetails.OrderBy(d => d.EastWestMatchPoints))
+                {
+                    <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("F1")</div>
+                }
+            </div>
+        </div>
+    }
 </MudPaper>
 
 @code {
     [Parameter]
     public GameData GameData { get; set; } = new();
 
-    private string FormatPlayer(GameModel.Player player) => player.ToString().PadRight(5);
-    private string FormatPlayerName(GameModel.Player player) => player.ToString().PadRight(5);
-    private string FormatVulnerable(string vulnerable) => vulnerable?.PadRight(10) ?? "None".PadRight(10);
-
-    private string FormatHand(string handString)
+    private class SuitDisplay
     {
-        if (string.IsNullOrWhiteSpace(handString)) return "";
+        public string Symbol { get; set; } = "";
+        public string Cards { get; set; } = "";
+        public string SuitClass { get; set; } = "";
+    }
+
+    private List<SuitDisplay> FormatHandBySuit(string handString)
+    {
+        var result = new List<SuitDisplay>();
+        if (string.IsNullOrWhiteSpace(handString)) return result;
+        
         var suits = handString.Split('.');
-        if (suits.Length != 4) return handString;
-        return $"♠{suits[0].PadRight(10)} ♥{suits[1].PadRight(10)} ♦{suits[2].PadRight(10)} ♣{suits[3]}";
+        if (suits.Length != 4) return result;
+
+        result.Add(new SuitDisplay { Symbol = "♠", Cards = suits[0], SuitClass = "spades" });
+        result.Add(new SuitDisplay { Symbol = "♥", Cards = suits[1], SuitClass = "hearts" });
+        result.Add(new SuitDisplay { Symbol = "♦", Cards = suits[2], SuitClass = "diamonds" });
+        result.Add(new SuitDisplay { Symbol = "♣", Cards = suits[3], SuitClass = "clubs" });
+
+        return result;
     }
 
-    private string FormatContract(GameData.ScoreDetail detail)
-    {
-        return detail.IsStoredScore && !string.IsNullOrEmpty(detail.Contract)
-            ? $"{detail.Contract} by {detail.Declarer}"
-            : "---";
-    }
-
-    private string FormatTricks(GameData.ScoreDetail detail)
-    {
-        return detail.IsStoredScore && detail.TricksMade > 0
-            ? detail.TricksMade.ToString()
-            : "---";
-    }
-
-    private string FormatScore(GameData.ScoreDetail detail)
+    private string FormatScoreValue(GameData.ScoreDetail detail)
     {
         return detail.IsStoredScore ? detail.Score.ToString() : "---";
+    }
+
+    private string GetScoreBoxClass(GameData.ScoreDetail detail)
+    {
+        if (!detail.IsStoredScore) return "score-box-empty";
+        return detail.Score >= 0 ? "score-box-positive" : "score-box-negative";
+    }
+
+    private bool IsNorthSouth(string declarer)
+    {
+        return declarer?.ToUpper() == "N" || declarer?.ToUpper() == "S" || 
+               declarer?.ToUpper() == "NORTH" || declarer?.ToUpper() == "SOUTH";
     }
 }
 
 <style>
     .board-card {
-        padding: 0.75rem;
-        font-family: 'Courier New', monospace;
-        font-size: 0.7rem;
+        padding: 1.5rem;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #ffffff;
+        color: #000000;
         display: flex;
         flex-direction: column;
+        gap: 1.5rem;
+        border: 4px solid #000000;
     }
 
-    .board-header {
-        margin-bottom: 0.5rem;
-    }
-
-    .header-line {
-        font-family: 'Courier New', monospace;
-        font-size: 0.65rem;
-        line-height: 1.2;
-    }
-
-    .board-content {
+    /* TOP ROW: Board Info */
+    .info-row {
         display: flex;
-        flex-direction: column;
-        overflow: visible;
+        justify-content: space-around;
+        align-items: center;
+        border-bottom: 4px solid #000000;
+        padding-bottom: 1rem;
+        gap: 2rem;
     }
 
-    .section-title {
-        font-weight: bold;
-        margin-top: 0.25rem;
+    .info-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #666666;
         margin-bottom: 0.25rem;
+        letter-spacing: 0.5px;
     }
 
-    .hands-section {
-        margin-bottom: 0.5rem;
+    .info-value {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #000000;
+    }
+
+    /* MIDDLE ROW: Bridge Hand Layout */
+    .hands-row {
+        border-bottom: 4px solid #000000;
+        padding-bottom: 1.5rem;
+    }
+
+    .hands-bridge-layout {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        gap: 1rem;
     }
 
-    .hand-line {
-        font-family: 'Courier New', monospace;
-        font-size: 0.7rem;
-        line-height: 1.3;
-        white-space: pre;
-        display: block;
+    .hands-horizontal {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
     }
 
-    .scores-section {
-        font-size: 0.65rem;
-        overflow: visible;
+    .hand {
+        background-color: #f8f8f8;
+        border: 3px solid #000000;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        box-shadow: 2px 2px 0px #000000;
     }
 
-    .score-header,
-    .score-row {
-        display: grid;
-        grid-template-columns: 100px 50px 60px 40px 40px 1fr;
+    .hand-north,
+    .hand-south {
+        min-width: 280px;
+    }
+
+    .hand-west,
+    .hand-east {
+        flex: 1;
+        max-width: 280px;
+    }
+
+    .center-space {
+        flex: 0 0 60px;
+    }
+
+    .player-label {
+        font-size: 1rem;
+        font-weight: 900;
+        color: #000000;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 0.25rem;
+    }
+
+    .suits-vertical {
+        display: flex;
+        flex-direction: column;
         gap: 0.25rem;
-        padding: 0.15rem 0;
     }
 
-    .score-header {
-        font-weight: bold;
-        border-bottom: 1px solid #ddd;
+    .suit-line {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        line-height: 1.4;
     }
 
-    .score-row {
-        border-bottom: 1px solid #f0f0f0;
+    .suit-symbol {
+        font-size: 1.5rem;
+        font-weight: 900;
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .suit-symbol.spades {
+        color: #000000;
+    }
+
+    .suit-symbol.hearts {
+        color: #d32f2f;
+    }
+
+    .suit-symbol.diamonds {
+        color: #d32f2f;
+    }
+
+    .suit-symbol.clubs {
+        color: #000000;
+    }
+
+    .suit-cards {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* BOTTOM ROW: Scoring */
+    .scoring-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .mp-labels-top,
+    .mp-labels-bottom {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 10px;
+    }
+
+    .mp-label-ns,
+    .mp-label-ew {
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: #000000;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .score-line-container {
+        position: relative;
+        padding: 10px 0;
+    }
+
+    .score-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background-color: #000000;
+        transform: translateY(-50%);
+        z-index: 0;
+    }
+
+    .score-boxes {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        z-index: 1;
+        gap: 8px;
+    }
+
+    .score-box {
+        flex: 1;
+        min-width: 60px;
+        min-height: 100px;
+        border: 4px solid #000000;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 4px;
+        position: relative;
+        box-shadow: 3px 3px 0px #000000;
+    }
+
+    .score-box-positive {
+        background-color: #ffffff;
+    }
+
+    .score-box-negative {
+        background-color: #f0f0f0;
+    }
+
+    .score-box-empty {
+        background-color: #e8e8e8;
+        border-style: dashed;
+    }
+
+    .contract-info {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #000000;
+        text-align: center;
+        line-height: 1.2;
+        position: absolute;
+        width: 100%;
+        padding: 0 2px;
+    }
+
+    .contract-ns {
+        top: 4px;
+    }
+
+    .contract-ew {
+        bottom: 4px;
+    }
+
+    .score-value {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #000000;
+        text-align: center;
+        line-height: 1;
+    }
+
+    .tricks-info {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #333333;
+        margin-top: 2px;
     }
 
     @@media print {
         .board-card {
-            padding: 0.5rem;
-            font-size: 0.6rem;
+            padding: 1rem;
             box-shadow: none !important;
-            border: 1px solid #000;
+            border: 3px solid #000000;
+            page-break-inside: avoid;
+            gap: 1rem;
         }
 
-        .header-line {
-            font-size: 0.55rem;
+        .info-value {
+            font-size: 1.6rem;
         }
 
-        .hand-line {
-            font-size: 0.6rem;
+        .hand {
+            padding: 0.5rem 0.75rem;
         }
 
-        .scores-section {
-            font-size: 0.55rem;
+        .score-box {
+            min-height: 80px;
+            border-width: 3px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+        }
+
+        .mp-label-ns,
+        .mp-label-ew {
+            font-size: 1rem;
+        }
+
+        .score-line {
+            height: 4px;
         }
     }
 </style>
