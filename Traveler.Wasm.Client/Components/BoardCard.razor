@@ -97,12 +97,15 @@
     @if (GameData.ScoreDetails.Any())
     {
         <div class="scoring-row">
+            <!-- Top labels with table count -->
             <div class="mp-labels-top">
                 <div class="mp-label-spacer">N/S</div>
                 @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                 {
-                    <div class="mp-label-ns">@detail.MatchPoints.ToString("F1")</div>
-                }
+                    <div class="mp-label-container">
+                        <div class="mp-label-ns">@detail.MatchPoints.ToString("F1")</div>
+                        </div>
+                        }
             </div>
             
             <div class="score-line-container">
@@ -160,11 +163,18 @@
                 </div>
             </div>
 
+            <!-- Bottom labels with table count -->
             <div class="mp-labels-bottom">
                 <div class="mp-label-spacer">E/W</div>
                 @foreach (var detail in GameData.ScoreDetails.OrderBy(d => d.EastWestMatchPoints))
                 {
-                    <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("F1")</div>
+                    <div class="mp-label-container">
+                        <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("F1")</div>
+                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
+                        {
+                            <div class="tables-count">@detail.TablesWithScore tables</div>
+                        }
+                    </div>
                 }
             </div>
         </div>
@@ -399,14 +409,27 @@
         flex-shrink: 0;
     }
 
+    .mp-label-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .tables-count {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #666666;
+        text-align: center;
+    }
+
     .mp-label-ns,
     .mp-label-ew {
         font-size: 1.2rem;
         font-weight: 900;
         color: #000000;
-        min-width: 60px;
         text-align: center;
-        flex: 1;
     }
 
     .score-line-container {
@@ -578,6 +601,10 @@
         .mp-label-ns,
         .mp-label-ew {
             font-size: 1rem;
+        }
+
+        .tables-count {
+            font-size: 0.65rem;
         }
 
         .score-line {
