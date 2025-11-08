@@ -41,7 +41,7 @@
         <div class="boards-stack">
             @foreach (var board in Boards)
             {
-                <BoardCard GameData="@board" />
+                <BoardCard GameData="@board" EventName="@EventName" />
             }
         </div>
     }
