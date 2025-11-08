@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitchen Duplicate Traveler</title>
+    <base href="/KitchenDuplicateTraveler/" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="css/print.css" rel="stylesheet" media="print" />
+    <style>
+        #loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a27 0%, #2a2833 100%);
+        }
+
+        .card-animation {
+            position: relative;
+            width: 200px;
+            height: 280px;
+            margin-bottom: 2rem;
+        }
+
+        .playing-card {
+            position: absolute;
+            width: 80px;
+            height: 112px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            animation: dealCard 2s ease-in-out infinite;
+        }
+
+            .playing-card:nth-child(1) {
+                animation-delay: 0s;
+                color: #e74c3c;
+            }
+
+            .playing-card:nth-child(2) {
+                animation-delay: 0.5s;
+                color: #000;
+            }
+
+            .playing-card:nth-child(3) {
+                animation-delay: 1s;
+                color: #e74c3c;
+            }
+
+            .playing-card:nth-child(4) {
+                animation-delay: 1.5s;
+                color: #000;
+            }
+
+        @keyframes dealCard {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+
+            25% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(60px, -40px) rotate(15deg);
+            }
+
+            75% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(120px, 0) rotate(0deg);
+                opacity: 0;
+            }
+        }
+
+        .loading-message {
+            font-size: 1.5rem;
+            color: #b2b0bf;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            min-height: 3rem;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+
+        .loading-subtitle {
+            font-size: 1rem;
+            color: #92929f;
+            text-align: center;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .spinner {
+            margin-top: 1rem;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(126, 111, 255, 0.1);
+            border-top: 4px solid #7e6fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="loading-container">
+            <div class="card-animation">
+                <div class="playing-card">♠</div>
+                <div class="playing-card">♣</div>
+                <div class="playing-card">♥</div>
+                <div class="playing-card">♦</div>
+            </div>
+            <div class="loading-message" id="bridge-message">Shuffling the deck...</div>
+            <div class="loading-subtitle">Kitchen Duplicate Traveler</div>
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script>
+        // Bridge-themed loading messages
+        const bridgeMessages = [
+            "Shuffling the deck...",
+            "Dealing 13 cards to each player...",
+            "Counting points... looks like a yarborough!",
+            "Finessing the interface...",
+            "Calculating match points...",
+            "Setting up the dummy hand...",
+            "Arranging suits by color...",
+            "Preparing traveler sheets...",
+            "Checking for revokes...",
+            "Bid 7NT? Hold my cards...",
+            "No trump, no problem...",
+            "Setting the vulnerability...",
+            "Sorting by SAYC convention...",
+            "Installing card sense module...",
+            "Downloading bridge etiquette...",
+            "Calibrating the finesse meter...",
+            "Teaching partner to count to 13...",
+            "Remembering the bidding...",
+            "Psyching out the opponents...",
+            "Loading duplicate boards..."
+        ];
+
+        let messageIndex = 0;
+        const messageElement = document.getElementById('bridge-message');
+
+        function rotateMessage() {
+            messageElement.style.opacity = '0';
+            setTimeout(() => {
+                messageIndex = (messageIndex + 1) % bridgeMessages.length;
+                messageElement.textContent = bridgeMessages[messageIndex];
+                messageElement.style.opacity = '1';
+            }, 300);
+        }
+
+        // Rotate messages every 2.5 seconds
+        const messageInterval = setInterval(rotateMessage, 2500);
+
+        // Clean up when Blazor loads
+        window.addEventListener('load', function () {
+            clearInterval(messageInterval);
+        });
+    </script>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+</body>
+
+</html>
