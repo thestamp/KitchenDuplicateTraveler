@@ -1,0 +1,182 @@
+@using Traveler.Core.Models
+
+<div class="summary-page">
+    <MudPaper Class="summary-container" Elevation="3">
+        <div class="summary-header">
+            <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+                Summary: Boards @FirstBoard - @LastBoard
+            </MudText>
+            @if (!string.IsNullOrEmpty(EventName))
+            {
+                <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Secondary">
+                    @EventName
+                </MudText>
+            }
+            <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary" Class="mt-2">
+                Results sorted by Match Points (highest to lowest)
+            </MudText>
+        </div>
+
+        <MudTable Items="@SummaryRows" Striped="true" Bordered="true" Dense="false" Class="summary-table">
+            <HeaderContent>
+                <MudTh Class="header-cell">Rank</MudTh>
+                <MudTh Class="header-cell">Match Points</MudTh>
+                <MudTh Class="header-cell">Bridge Score</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Class="rank-cell">@context.Rank</MudTd>
+                <MudTd Class="mp-cell">@context.MatchPoints.ToString("F1")</MudTd>
+                <MudTd Class="score-cell">@context.BridgeScore</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</div>
+
+@code {
+    [Parameter]
+    public List<GameData> Boards { get; set; } = new();
+
+    [Parameter]
+    public int NumberOfBoards { get; set; }
+
+    [Parameter]
+    public string? EventName { get; set; }
+
+    private int FirstBoard => Boards.Any() ? Boards.Min(b => b.GameModel.BoardNumber) : 0;
+    private int LastBoard => FirstBoard + NumberOfBoards - 1;
+
+    private List<ScoreSummary> SummaryRows => CalculateSummaries();
+
+    private class ScoreSummary
+    {
+        public int Rank { get; set; }
+        public double MatchPoints { get; set; }
+        public int BridgeScore { get; set; }
+    }
+
+    private List<ScoreSummary> CalculateSummaries()
+    {
+        var scores = new List<ScoreSummary>();
+        
+        // Take only the requested number of boards
+        var boardsToUse = Boards.Take(NumberOfBoards).ToList();
+
+        // Collect all score details from all boards
+        foreach (var board in boardsToUse)
+        {
+            foreach (var detail in board.ScoreDetails.Where(d => d.IsStoredScore))
+            {
+                scores.Add(new ScoreSummary
+                {
+                    MatchPoints = detail.MatchPoints,
+                    BridgeScore = detail.Score
+                });
+            }
+        }
+
+        // Sort by match points descending and add rank
+        var sortedScores = scores
+            .OrderByDescending(s => s.MatchPoints)
+            .ThenByDescending(s => s.BridgeScore)
+            .ToList();
+
+        int currentRank = 1;
+        for (int i = 0; i < sortedScores.Count; i++)
+        {
+            if (i > 0 && Math.Abs(sortedScores[i].MatchPoints - sortedScores[i - 1].MatchPoints) > 0.01)
+            {
+                currentRank = i + 1;
+            }
+            sortedScores[i].Rank = currentRank;
+        }
+
+        return sortedScores;
+    }
+}
+
+<style>
+    .summary-page {
+        page-break-before: always;
+        padding: 2rem;
+    }
+
+    .summary-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .summary-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #000000;
+    }
+
+    .summary-table {
+        font-size: 1.2rem;
+    }
+
+    .header-cell {
+        font-weight: 900;
+        font-size: 1.3rem;
+        background-color: #f5f5f5 !important;
+        text-align: center;
+        padding: 1rem !important;
+    }
+
+    .rank-cell {
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-align: center;
+        background-color: #f5f5f5;
+        padding: 0.8rem !important;
+    }
+
+    .mp-cell {
+        font-weight: 900;
+        font-size: 1.3rem;
+        text-align: center;
+        background-color: #fff3cd;
+        padding: 0.8rem !important;
+    }
+
+    .score-cell {
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-align: center;
+        padding: 0.8rem !important;
+    }
+
+    @@media print {
+        .summary-page {
+            padding: 1rem;
+        }
+
+        .summary-container {
+            padding: 1rem;
+            box-shadow: none !important;
+        }
+
+        .summary-table {
+            font-size: 1.1rem;
+        }
+
+        .header-cell {
+            background-color: #f5f5f5 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .rank-cell {
+            background-color: #f5f5f5 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .mp-cell {
+            background-color: #fff3cd !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>

@@ -36,13 +36,50 @@
         </div>
     }
 
-    @if (Boards != null && Boards.Any())
+    @if (Boards != null && Boards.Any() && !NumberOfBoardsSelected)
+    {
+        <div class="event-header no-print">
+            <MudPaper Class="pa-4 mb-4" Elevation="2">
+                <MudText Typo="Typo.h6" GutterBottom="true">
+                    How many boards will you play?
+                </MudText>
+                <MudText Typo="Typo.body2" Class="mb-3" Color="Color.Secondary">
+                    Select the number of boards you intend to play in your kitchen duplicate session.
+                    A summary table will be generated showing the results sorted by match points.
+                </MudText>
+                <div class="d-flex align-center gap-2">
+                    <MudNumericField @bind-Value="SelectedNumberOfBoards"
+                                    Label="Number of Boards"
+                                    Variant="Variant.Outlined"
+                                    Min="1"
+                                    Max="@Boards.Count"
+                                    Style="max-width: 200px;" />
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="ConfirmNumberOfBoards"
+                               Disabled="@(SelectedNumberOfBoards < 1 || SelectedNumberOfBoards > Boards.Count)">
+                        Generate Boards
+                    </MudButton>
+                </div>
+                <MudText Typo="Typo.caption" Class="mt-2">
+                    Available boards: 1 to @Boards.Count
+                </MudText>
+            </MudPaper>
+        </div>
+    }
+
+    @if (Boards != null && Boards.Any() && NumberOfBoardsSelected)
     {
         <div class="boards-stack">
-            @foreach (var board in Boards)
+            @foreach (var board in Boards.Take(SelectedNumberOfBoards))
             {
                 <BoardCard GameData="@board" EventName="@EventName" />
             }
+            
+            <!-- Summary Table at the end -->
+            <BoardSummaryTable Boards="@Boards"
+                               NumberOfBoards="@SelectedNumberOfBoards"
+                               EventName="@EventName" />
         </div>
     }
 </div>
@@ -62,6 +99,26 @@
 
     [Parameter]
     public string? PbnUrl { get; set; }
+
+    private int SelectedNumberOfBoards { get; set; }
+    private bool NumberOfBoardsSelected { get; set; } = false;
+
+    protected override void OnParametersSet()
+    {
+        // Default to all boards
+        if (Boards != null && Boards.Any() && SelectedNumberOfBoards == 0)
+        {
+            SelectedNumberOfBoards = Boards.Count;
+        }
+    }
+
+    private void ConfirmNumberOfBoards()
+    {
+        if (SelectedNumberOfBoards >= 1 && SelectedNumberOfBoards <= Boards.Count)
+        {
+            NumberOfBoardsSelected = true;
+        }
+    }
 }
 
 <style>
