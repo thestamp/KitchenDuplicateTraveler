@@ -63,10 +63,7 @@
                 {
                     <div class="mp-label-container mp-border-ns">
                         <div class="mp-label">@detail.MatchPoints.ToString("0.#")</div>
-                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
-                        {
-                            <div class="tables-count">@detail.TablesWithScore tables</div>
-                        }
+                        
                     </div>
                 }
             </div>
@@ -92,12 +89,27 @@
                                         <div class="contract-inline">
                                             @((MarkupString)contractDisplay)
                                         </div>
+                                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
+                                        {
+                                            <div class="tables-count">@detail.TablesWithScore tables</div>
+                                        }
+                                        else{
+                                                <div class="tables-count">@detail.TablesWithScore table</div>
+                                        }
                                     </div>
                                 }
                                 else
                                 {
                                     <!-- E/W won points - both at BOTTOM -->
                                     <div class="score-group score-group-bottom">
+                                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
+                                        {
+                                            <div class="tables-count">@detail.TablesWithScore tables</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="tables-count">@detail.TablesWithScore table</div>
+                                        }
                                         <div class="contract-inline">
                                             @((MarkupString)contractDisplay)
                                         </div>
