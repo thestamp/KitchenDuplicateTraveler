@@ -71,9 +71,20 @@
     @if (Boards != null && Boards.Any() && NumberOfBoardsSelected)
     {
         <div class="boards-stack">
-            @foreach (var board in Boards.Take(SelectedNumberOfBoards))
-            {
-                <BoardCard GameData="@board" EventName="@EventName" />
+            @{
+                var boardList = Boards.Take(SelectedNumberOfBoards).ToList();
+                for (int i = 0; i < boardList.Count; i++)
+                {
+                    <BoardCard GameData="@boardList[i]" EventName="@EventName" />
+
+                    @* Add fold line separator between boards (not after the last one) *@
+                    @if (i < boardList.Count - 1)
+                    {
+                        <div class="fold-separator">
+                            <div class="fold-line-vertical"></div>
+                        </div>
+                    }
+                }
             }
         </div>
     }
@@ -128,7 +139,23 @@
     .boards-stack {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 0;
+    }
+
+    /* Fold line separator between boards */
+    .fold-separator {
+        height: 1.5rem;
+        position: relative;
+        width: 100%;
+    }
+
+    .fold-line-vertical {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 60%;
+        width: 0;
+        border-left: 2px dashed #999;
     }
 
     @@media print {
@@ -137,7 +164,19 @@
         }
 
         .boards-stack {
-            gap: 1rem;
+            gap: 0;
+        }
+
+        /* Smaller separator for print */
+        .fold-separator {
+            height: 1rem;
+        }
+
+        .fold-line-vertical {
+            right: 42px;
+            border-left: 2px dashed #000;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         /* Each board on its own line when printing */
