@@ -22,6 +22,7 @@
    <!-- NORTH/SOUTH HANDS ROW -->
      <div class="hands-row hands-ns">
         <div class="hands-compact-layout">
+            <div class="team-label team-label-ns">N/S</div>
             @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.North))
             {
                 <div class="hand hand-compact">
@@ -61,7 +62,11 @@
                 @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                 {
                     <div class="mp-label-container">
-                        <div class="mp-label-ns">@detail.MatchPoints.ToString("0.#")</div>
+                        <div class="mp-label">@detail.MatchPoints.ToString("0.#")</div>
+                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
+                        {
+                            <div class="tables-count">@detail.TablesWithScore tables</div>
+                        }
                     </div>
                 }
             </div>
@@ -112,11 +117,7 @@
                 @foreach (var detail in GameData.ScoreDetails.OrderBy(d => d.EastWestMatchPoints))
                 {
                     <div class="mp-label-container">
-                        <div class="mp-label-ew">@detail.EastWestMatchPoints.ToString("0.#")</div>
-                        @if (detail.IsStoredScore && detail.TablesWithScore > 1)
-                        {
-                            <div class="tables-count">(@detail.TablesWithScore)</div>
-                        }
+                        <div class="mp-label">@detail.EastWestMatchPoints.ToString("0.#")</div>
                     </div>
                 }
             </div>
@@ -126,6 +127,7 @@
     <!-- EAST/WEST HANDS ROW -->
     <div class="hands-row hands-ew">
         <div class="hands-compact-layout">
+            <div class="team-label team-label-ew">E/W</div>
             @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.East))
             {
                 <div class="hand hand-compact">
@@ -435,25 +437,47 @@
      color: #666666;
     }
 
+    /* TEAM LABELS */
+    .team-label {
+        font-size: 0.9rem;
+        font-weight: 900;
+        text-align: center;
+        padding: 0.35rem 0.6rem;
+        letter-spacing: 1px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+
+    .team-label-ns {
+        background-color: #d9ead3;
+        color: #000000;
+    }
+
+    .team-label-ew {
+        background-color: #cfe2f3;
+        color: #000000;
+    }
+
     /* HANDS ROW: Compact Bridge Hand Layout */
     .hands-row {
-     padding-bottom: 0.4rem;
+     padding: 0.5rem;
+     border-radius: 4px;
     }
 
     .hands-ns {
-   border-bottom: 2px solid #000000;
+   background-color: #d9ead3;
+   border: 2px solid #93c47d;
     }
 
     .hands-ew {
-     border-top: 2px solid #000000;
-   padding-top: 0.4rem;
-        padding-bottom: 0;
+     background-color: #cfe2f3;
+     border: 2px solid #6fa8dc;
     }
 
 .hands-compact-layout {
      display: flex;
-     gap: 0.8rem;
-        justify-content: center;
+     gap: 0.5rem;
+        align-items: center;
         flex-wrap: nowrap;
     }
 
@@ -538,8 +562,7 @@
    gap: 1px;
     }
 
-    .mp-label-ns,
-    .mp-label-ew {
+    .mp-label {
       font-size: 1rem;
         font-weight: 900;
      color: #000000;
@@ -596,12 +619,15 @@
         box-shadow: 2px 2px 0px #000000;
     }
 
+    /* Score boxes colored based on who won */
     .score-box-positive {
-    background-color: #ffffff;
+        background-color: #d9ead3;
+        border-color: #93c47d;
     }
 
     .score-box-negative {
-        background-color: #ffffff;
+        background-color: #cfe2f3;
+        border-color: #6fa8dc;
     }
 
   /* Empty boxes have no border or background */
@@ -767,24 +793,37 @@
             padding-top: 0.3rem;
         }
 
-        .hand-compact {
-    padding: 0.25rem 0.4rem;
-        border-width: 1.5px;
-         gap: 0.3rem;
-            background-color: #ffffff;
-}
-
-        .player-label-compact {
-    font-size: 0.9rem;
- min-width: 14px;
+        .team-label {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        .suit-symbol-compact {
-            font-size: 0.95rem;
+        .team-label-ns {
+            background-color: #d9ead3 !important;
         }
 
-   .suit-cards-compact {
-      font-size: 0.8rem;
+        .team-label-ew {
+            background-color: #cfe2f3 !important;
+        }
+
+        .hands-row {
+            padding: 0.4rem;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .hands-ns {
+            background-color: #d9ead3 !important;
+            border-color: #93c47d !important;
+            border-width: 1.5px;
+        }
+
+        .hands-ew {
+            background-color: #cfe2f3 !important;
+            border-color: #6fa8dc !important;
+            border-width: 1.5px;
         }
 
   .score-box {
@@ -792,12 +831,21 @@
             border-width: 1.5px;
             min-width: 38px;
             padding: 5px 2px;
-          background-color: #ffffff;
         }
 
-  .score-box-positive,
+        /* Print-friendly score box colors */
+        .score-box-positive {
+            background-color: #d9ead3 !important;
+            border-color: #93c47d !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
         .score-box-negative {
-            background-color: #ffffff;
+            background-color: #cfe2f3 !important;
+            border-color: #6fa8dc !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
 .score-group {
@@ -816,8 +864,7 @@
             font-size: 1.1em;
         }
 
-.mp-label-ns,
-        .mp-label-ew {
+        .mp-label {
       font-size: 0.9rem;
         }
 
