@@ -22,7 +22,7 @@
    <!-- NORTH/SOUTH HANDS ROW -->
      <div class="hands-row hands-ns">
         <div class="hands-compact-layout">
-            <div class="team-label team-label-ns">N/S</div>
+            <div class="team-label team-label-ns">NORTH/SOUTH</div>
             @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.North))
             {
                 <div class="hand hand-compact">
@@ -127,7 +127,7 @@
     <!-- EAST/WEST HANDS ROW -->
     <div class="hands-row hands-ew">
         <div class="hands-compact-layout">
-            <div class="team-label team-label-ew">E/W</div>
+            <div class="team-label team-label-ew">EAST/WEST</div>
             @if (GameData.GameModel.PlayerHands.ContainsKey(GameModel.Player.East))
             {
                 <div class="hand hand-compact">
@@ -439,10 +439,10 @@
 
     /* TEAM LABELS */
     .team-label {
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         font-weight: 900;
         text-align: center;
-        padding: 0.35rem 0.6rem;
+        padding: 0.25rem 0.5rem;
         letter-spacing: 1px;
         border-radius: 3px;
         flex-shrink: 0;
@@ -477,8 +477,9 @@
 .hands-compact-layout {
      display: flex;
      gap: 0.5rem;
+        justify-content: center;
         align-items: center;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
     }
 
     .hand-compact {
