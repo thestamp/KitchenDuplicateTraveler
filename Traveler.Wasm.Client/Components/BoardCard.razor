@@ -61,7 +61,7 @@
             <div class="mp-labels-top">
                 @foreach (var detail in GameData.ScoreDetails.OrderByDescending(d => d.MatchPoints))
                 {
-                    <div class="mp-label-container">
+                    <div class="mp-label-container mp-border-ns">
                         <div class="mp-label">@detail.MatchPoints.ToString("0.#")</div>
                         @if (detail.IsStoredScore && detail.TablesWithScore > 1)
                         {
@@ -116,7 +116,7 @@
             <div class="mp-labels-bottom">
                 @foreach (var detail in GameData.ScoreDetails.OrderBy(d => d.EastWestMatchPoints))
                 {
-                    <div class="mp-label-container">
+                    <div class="mp-label-container mp-border-ew">
                         <div class="mp-label">@detail.EastWestMatchPoints.ToString("0.#")</div>
                     </div>
                 }
@@ -560,13 +560,26 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-   gap: 1px;
+        gap: 1px;
+        border-radius: 4px;
+        padding: 0.3rem;
+        border: 3px solid #cccccc;
+    }
+
+    /* Green border for N/S scoring */
+    .mp-border-ns {
+        border-color: #93c47d;
+    }
+
+    /* Blue border for E/W scoring */
+    .mp-border-ew {
+        border-color: #6fa8dc;
     }
 
     .mp-label {
-      font-size: 1rem;
+        font-size: 1rem;
         font-weight: 900;
-     color: #000000;
+        color: #000000;
         text-align: center;
     }
 
@@ -827,29 +840,27 @@
             border-width: 1.5px;
         }
 
-  .score-box {
+        /* Match point border colors for print */
+        .mp-border-ns {
+            border-color: #93c47d !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .mp-border-ew {
+            border-color: #6fa8dc !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .score-box {
             min-height: 80px;
             border-width: 1.5px;
             min-width: 38px;
             padding: 5px 2px;
         }
 
-        /* Print-friendly score box colors */
-        .score-box-positive {
-            background-color: #d9ead3 !important;
-            border-color: #93c47d !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .score-box-negative {
-            background-color: #cfe2f3 !important;
-            border-color: #6fa8dc !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-.score-group {
+        .score-group {
             gap: 1px;
         }
 
