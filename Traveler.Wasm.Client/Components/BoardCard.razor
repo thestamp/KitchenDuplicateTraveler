@@ -562,18 +562,39 @@
         align-items: center;
         gap: 1px;
         border-radius: 4px;
-        padding: 0.3rem;
-        border: 3px solid #cccccc;
+        padding: 0.4rem 0.3rem;
+        border: 1px solid #cccccc;
+        position: relative;
     }
 
-    /* Green border for N/S scoring */
+    /* Green border and background for N/S scoring */
     .mp-border-ns {
         border-color: #93c47d;
+        background-color: #d9ead3;
     }
 
-    /* Blue border for E/W scoring */
+    /* Blue border and background for E/W scoring */
     .mp-border-ew {
         border-color: #6fa8dc;
+        background-color: #cfe2f3;
+    }
+
+    .mp-labels-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+        margin-bottom: -15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .mp-labels-bottom {
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+        margin-top: -15px;
+        position: relative;
+        z-index: 1;
     }
 
     .mp-label {
@@ -595,27 +616,28 @@
         padding: 7px 0;
         display: flex;
         align-items: center;
+        z-index: 2;
     }
 
     .score-line {
         position: absolute;
-     top: 50%;
+        top: 50%;
         left: 0;
         right: 0;
-  height: 4px;
-     background-color: #000000;
-      transform: translateY(-50%);
+        height: 4px;
+        background-color: #000000;
+        transform: translateY(-50%);
         z-index: 0;
     }
 
     .score-boxes {
-    position: relative;
+        position: relative;
         display: flex;
-      justify-content: space-between;
-        z-index: 1;
+        justify-content: space-between;
+        z-index: 3;
         gap: 5px;
         flex: 1;
-     width: 100%;
+        width: 100%;
     }
 
     .score-box {
@@ -630,7 +652,8 @@
         align-items: center;
         padding: 6px 3px;
         position: relative;
-        box-shadow: 2px 2px 0px #000000;
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 3;
     }
 
     /* Score boxes colored based on who won */
@@ -840,17 +863,27 @@
             border-width: 1.5px;
         }
 
-        /* Match point border colors for print */
+        /* Match point border colors and backgrounds for print */
         .mp-border-ns {
             border-color: #93c47d !important;
+            background-color: #d9ead3 !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
         .mp-border-ew {
             border-color: #6fa8dc !important;
+            background-color: #cfe2f3 !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+        }
+
+        .mp-labels-top {
+            margin-bottom: -12px;
+        }
+
+        .mp-labels-bottom {
+            margin-top: -12px;
         }
 
         .score-box {
@@ -858,34 +891,9 @@
             border-width: 1.5px;
             min-width: 38px;
             padding: 5px 2px;
-        }
-
-        .score-group {
-            gap: 1px;
-        }
-
-        .score-display {
-         font-size: 1.1rem;
-        }
-
-     .contract-inline {
-    font-size: 0.65rem;
-        }
-
-      .suit-symbol-contract {
-            font-size: 1.1em;
-        }
-
-        .mp-label {
-      font-size: 0.9rem;
-        }
-
-        .tables-count {
-            font-size: 0.55rem;
-        }
-
-        .score-line {
-       height: 3px;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
     }
 </style>
