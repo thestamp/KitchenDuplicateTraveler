@@ -157,7 +157,7 @@ else
 
         <TravelerDisplay Boards="@_boardData"
                          EventUrl="@_selectedTournament?.GetEventUrl()"
-                         EventName="@_selectedTournament?.EventName"
+                         EventName="@(!string.IsNullOrEmpty(_selectedFileName) ? _selectedFileName : _selectedTournament?.EventName)"
                          ClubName="@_selectedTournament?.ClubName"
                          PbnUrl="@_pbnFileUrl" />
     </div>
@@ -359,4 +359,4 @@ else
         _boardData = new();
         _selectedTournament = null;
     }
-}
+}}
